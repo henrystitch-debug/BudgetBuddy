@@ -1,8 +1,12 @@
 package com.github.budgetbuddy.database.entity;
 
+import androidx.room.Entity;
+
+@Entity(tableName = "streak")
 public class Streak {
+    public int id;
     public int counter;
-    public int longest_streak;
     public long last_updated;
-    public long[] successful_months;
+    public long start_Date;
+
 }
