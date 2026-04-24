@@ -1,5 +1,6 @@
 package com.github.budgetbuddy.database.dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -33,4 +34,6 @@ public interface ExpenseDao {
 
         @Delete
         void deleteExpense(Expense expense);
+
+        LiveData<List<Expense>> getAll();
 }
