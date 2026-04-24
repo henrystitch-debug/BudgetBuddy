@@ -1,5 +1,6 @@
 package com.github.budgetbuddy.database.dao;
 
+import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
@@ -7,6 +8,7 @@ import androidx.room.Query;
 import com.github.budgetbuddy.database.entity.Expense;
 
 import java.util.List;
+@Dao
 public interface ExpenseDao {
         @Insert
         void insert(Expense expense);
