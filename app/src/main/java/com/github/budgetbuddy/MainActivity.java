@@ -10,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.room.Room;
 
 import com.github.budgetbuddy.database.AppDatabase;
+import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Expense;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,12 +26,15 @@ public class MainActivity extends AppCompatActivity {
         db = Room.databaseBuilder(
                 getApplicationContext(),
                 AppDatabase.class,
-                "expense-db"
+                "budget_buddy_db"
         ).allowMainThreadQueries().build();
 
-        //TODO: Test to initialize - remove later
+        //Test to initialize tables
+
+        Category c = new Category();
+        c.name = "Food";
+        db.categoryDao().insertCategory(c);
         Expense e = new Expense();
-        e.id = 1;
         e.amount = 0;
         e.categoryId = 1;
         e.entryDate = System.currentTimeMillis();
