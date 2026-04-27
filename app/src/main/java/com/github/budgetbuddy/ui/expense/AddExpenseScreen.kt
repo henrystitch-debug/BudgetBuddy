@@ -5,15 +5,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -33,14 +34,14 @@ fun AddExpenseScreen(
     var selectedCategory by remember { mutableStateOf("Food") }
 
     val categories = listOf(
-        CategoryItem("Food", R.drawable.outline_change_circle_24),
-        CategoryItem("Home", R.drawable.outline_change_circle_24),
-        CategoryItem("Transport", R.drawable.outline_change_circle_24),
-        CategoryItem("School", R.drawable.outline_change_circle_24),
-        CategoryItem("Health", R.drawable.outline_change_circle_24),
-        CategoryItem("Shopping", R.drawable.outline_change_circle_24),
-        CategoryItem("Fun", R.drawable.outline_change_circle_24),
-        CategoryItem("Other", R.drawable.outline_change_circle_24)
+        CategoryItem("Food", Icons.Default.Restaurant),
+        CategoryItem("Home", Icons.Default.Home),
+        CategoryItem("Transport", Icons.Default.DirectionsCar),
+        CategoryItem("School", Icons.Default.School),
+        CategoryItem("Health", Icons.Default.MedicalServices),
+        CategoryItem("Shopping", Icons.Default.ShoppingCart),
+        CategoryItem("Fun", Icons.Default.Celebration),
+        CategoryItem("Other", Icons.Default.Category)
     )
 
     Column(
@@ -185,7 +186,7 @@ fun CategoryGridItem(
                 )
         ) {
             Icon(
-                painter = painterResource(id = category.iconRes),
+                imageVector = category.icon,
                 contentDescription = category.name,
                 tint = Color(0xFF4A3800)
             )
@@ -199,7 +200,7 @@ fun CategoryGridItem(
     }
 }
 
-data class CategoryItem(val name: String, val iconRes: Int)
+data class CategoryItem(val name: String, val icon: ImageVector)
 
 @Preview(showBackground = true)
 @Composable
