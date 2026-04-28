@@ -6,7 +6,6 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 
-import com.github.budgetbuddy.database.entity.Budget;
 import com.github.budgetbuddy.database.entity.Category;
 
 import java.util.List;
