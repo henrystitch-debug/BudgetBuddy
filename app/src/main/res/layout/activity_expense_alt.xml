@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add Expense"
+        android:text="@string/add_expense"
         android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="#1A1A1A"
@@ -32,7 +32,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Amount"
+                android:text="@string/amount"
                 android:textSize="14sp"
                 android:textColor="#888888"
                 android:layout_marginBottom="6dp" />
@@ -44,7 +44,7 @@
                 android:background="@drawable/input_background"
                 android:paddingHorizontal="16dp"
                 android:inputType="numberDecimal"
-                android:hint="0.00"
+                android:hint="@string/number"
                 android:textSize="18sp"
                 android:textColor="#1A1A1A"
                 android:textColorHint="#CCCCCC"
@@ -54,7 +54,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Category"
+                android:text="@string/category"
                 android:textSize="14sp"
                 android:textColor="#888888"
                 android:layout_marginBottom="12dp" />
@@ -71,7 +71,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Note"
+                android:text="@string/add_note"
                 android:textSize="14sp"
                 android:textColor="#888888"
                 android:layout_marginBottom="6dp" />
@@ -85,7 +85,7 @@
                 android:paddingVertical="12dp"
                 android:inputType="textMultiLine"
                 android:gravity="top"
-                android:hint="Optional note..."
+                android:hint="@string/add_note"
                 android:textSize="15sp"
                 android:textColor="#1A1A1A"
                 android:textColorHint="#CCCCCC"
@@ -101,7 +101,7 @@
         android:layout_height="56dp"
         android:layout_margin="20dp"
         android:background="@drawable/button_background"
-        android:text="Save Expense"
+        android:text="@string/save_expense"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold" />
