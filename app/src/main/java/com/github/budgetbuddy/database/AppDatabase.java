@@ -18,7 +18,7 @@ import com.github.budgetbuddy.database.entity.Budget;
 import com.github.budgetbuddy.database.entity.Streak;
 import com.github.budgetbuddy.database.entity.Settings;
 
-    @Database(entities = {Expense.class, Category.class, Budget.class, Streak.class, Settings.class}, version = 1)
+    @Database(entities = {Expense.class, Category.class, Budget.class, Streak.class, Settings.class}, version = 2)
     public abstract class AppDatabase extends RoomDatabase {
 
         public abstract ExpenseDao expenseDao();
@@ -51,12 +51,13 @@ import com.github.budgetbuddy.database.entity.Settings;
                                 db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Housing', '🏠', 0)");
                                 db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Travel', '✈️', 0)");
                                 db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Education', '📚', 0)");
-                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Gaming', '🎮', 0)");
+                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Sports', '⚽', 0)");
                                 db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Utilities', '💡', 0)");
                                 db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Pets', '🐾', 0)");
                                 db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Gifts', '🎁', 0)");
                             }
-                        }).build();
+                        }).fallbackToDestructiveMigration(true)
+                                .build();
                     }
                 }
             }
