@@ -54,7 +54,7 @@ public class BudgetRepository {
      * Increments the spent amount for a specific budget.
      * Useful when a new expense is added.
      */
-    public void addToSpentAmount(int budgetId, int amount) {
+    public void addToSpentAmount(int budgetId, double amount) {
         budgetDao.incrementCurrentAmount(budgetId, amount);
     }
 
