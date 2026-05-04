@@ -13,7 +13,6 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import android.util.Log;
 
 import com.github.budgetbuddy.adapters.CategoryAdapter;
 import com.github.budgetbuddy.database.entity.Category;
@@ -23,7 +22,6 @@ public class AddExpenseActivity extends AppCompatActivity {
     private Category selectedCategory = null;
     private CategoryAdapter categoryAdapter;
     private AddExpenseViewModel viewModel;
-    public static final String TAG = "AddExpenseActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
