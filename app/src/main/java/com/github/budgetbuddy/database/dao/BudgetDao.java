@@ -28,7 +28,7 @@ public interface BudgetDao {
     Budget getBudgetById(int id);
 
     @Query("UPDATE budget SET current_amount = current_amount + :amount WHERE id = :id")
-    void incrementCurrentAmount(int id, int amount);
+    void incrementCurrentAmount(int id, double amount);
 
     @Delete
     void deleteBudget(Budget budget);
