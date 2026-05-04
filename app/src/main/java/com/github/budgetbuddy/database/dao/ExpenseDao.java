@@ -35,6 +35,7 @@ public interface ExpenseDao {
     @Query("SELECT categoryId, SUM(amount) as total FROM expense WHERE entryDate >= :startDate AND entryDate <= :endDate GROUP BY categoryId")
     List<CategorySpending> getSpendingByCategory(long startDate, long endDate);
 
+    // Requires entryDate to be stored as start-of-day millis (use ExpenseRepository to insert/update).
     @Query("SELECT entryDate as date, SUM(amount) as total FROM expense WHERE entryDate >= :startDate AND entryDate <= :endDate GROUP BY entryDate")
     List<DailySpending> getDailySpending(long startDate, long endDate);
 
