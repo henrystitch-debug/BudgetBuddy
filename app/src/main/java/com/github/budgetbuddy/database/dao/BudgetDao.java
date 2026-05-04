@@ -18,7 +18,7 @@ public interface BudgetDao {
     @Update
     void updateBudget(Budget budget);
 
-    @Query("SELECT * FROM budget WHERE startDate <= :date AND endDate >= :date LIMIT 1")
+    @Query("SELECT * FROM budget WHERE startDate <= :date AND endDate >= :date ORDER BY startDate DESC, id DESC LIMIT 1")
     Budget getActiveBudget(long date);
 
     @Query("SELECT * FROM budget WHERE startDate >= :start AND endDate <= :end")
