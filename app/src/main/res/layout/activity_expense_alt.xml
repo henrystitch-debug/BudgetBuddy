@@ -7,14 +7,30 @@
     android:id="@+id/main">
 
     <!-- Top bar -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/add_expense"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="#1A1A1A"
-        android:padding="24dp" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="24dp"
+            android:text="@string/add_expense"
+            android:textColor="#1A1A1A"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/cancelButton"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Cancel"
+            android:textSize="16sp" />
+
+    </LinearLayout>
 
     <!-- Scrollable content -->
     <ScrollView
