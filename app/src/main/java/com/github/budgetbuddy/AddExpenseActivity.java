@@ -13,15 +13,17 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import android.util.Log;
 
 import com.github.budgetbuddy.adapters.CategoryAdapter;
 import com.github.budgetbuddy.database.entity.Category;
 
-public class AddExpense extends AppCompatActivity {
+public class AddExpenseActivity extends AppCompatActivity {
 
     private Category selectedCategory = null;
     private CategoryAdapter categoryAdapter;
-    private AddExpenseViewModel viewModel; // ← added
+    private AddExpenseViewModel viewModel;
+    public static final String TAG = "AddExpenseActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +56,8 @@ public class AddExpense extends AppCompatActivity {
         EditText noteInput = findViewById(R.id.noteInput);
 
         Button saveButton = findViewById(R.id.saveButton);
+        Button cancelButton = findViewById(R.id.cancelButton);
+
         saveButton.setOnClickListener(v -> {
             String amountText = amountInput.getText().toString();
             String note = noteInput.getText().toString();
@@ -71,6 +75,10 @@ public class AddExpense extends AppCompatActivity {
             double amount = Double.parseDouble(amountText);
             viewModel.saveExpense(amount, selectedCategory.id, note);
             finish(); // go back to previous screen after saving
+        });
+
+        cancelButton.setOnClickListener(v -> {
+            finish();
         });
     }
 }
