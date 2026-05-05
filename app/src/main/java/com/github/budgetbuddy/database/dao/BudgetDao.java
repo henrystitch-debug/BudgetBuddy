@@ -11,8 +11,15 @@ import java.util.List;
 
 @Dao
 public interface BudgetDao {
+
     @Insert
     void insertBudget(Budget budget);
+
+    @Insert
+    long insertBudgetGetId(Budget budget);
+
+    @Query("UPDATE budget SET `limit` = :limit, startDate = :startDate, endDate = :endDate WHERE id = :id")
+    void updateBudget(int id, int limit, long startDate, long endDate);
 
     @Query("SELECT * FROM budget WHERE startDate = :start AND endDate = :end")
     List<Budget> getAllBudgetsOfThisMonth(long start, long end);
@@ -22,4 +29,7 @@ public interface BudgetDao {
 
     @Delete
     void deleteBudget(Budget budget);
+
+    @Query("SELECT COALESCE(SUM(`limit`), 0) FROM budget WHERE startDate >= :startDate AND endDate <= :endDate")
+    double getTotalBudgetLimitForInterval(long startDate, long endDate);
 }

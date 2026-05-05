@@ -1,7 +1,12 @@
 package com.github.budgetbuddy.database;
 
+import android.content.Context;
+
+import androidx.annotation.NonNull;
 import androidx.room.Database;
+import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.github.budgetbuddy.database.dao.BudgetDao;
 import com.github.budgetbuddy.database.dao.CategoryDao;
@@ -14,13 +19,77 @@ import com.github.budgetbuddy.database.entity.Budget;
 import com.github.budgetbuddy.database.entity.Streak;
 import com.github.budgetbuddy.database.entity.Settings;
 
-    @Database(entities = {Expense.class, Category.class, Budget.class, Streak.class, Settings.class}, version = 1)
-    public abstract class AppDatabase extends RoomDatabase {
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-        public abstract ExpenseDao expenseDao();
-        public abstract CategoryDao categoryDao();
-        public abstract BudgetDao budgetDao();
-        public abstract StreakDao streakDao();
-        public abstract SettingsDao settingsDao();
+@Database(entities = {Expense.class, Category.class, Budget.class, Streak.class, Settings.class}, version = 1, exportSchema = false)
+public abstract class AppDatabase extends RoomDatabase {
+
+    public abstract ExpenseDao expenseDao();
+    public abstract CategoryDao categoryDao();
+    public abstract BudgetDao budgetDao();
+    public abstract StreakDao streakDao();
+    public abstract SettingsDao settingsDao();
+
+    public static final ExecutorService databaseWriteExecutor = Executors.newFixedThreadPool(4);
+
+    private static volatile AppDatabase INSTANCE;
+
+    public static AppDatabase getDatabase(final Context context) {
+        if (INSTANCE == null) {
+            synchronized (AppDatabase.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = Room.databaseBuilder(
+                            context.getApplicationContext(),
+                            AppDatabase.class,
+                            "budget_buddy_database"
+                    ).addCallback(new RoomDatabase.Callback() {
+                        @Override
+                        public void onOpen(@NonNull SupportSQLiteDatabase db) {
+                            super.onOpen(db);
+                            databaseWriteExecutor.execute(() -> {
+                                AppDatabase database = INSTANCE;
+
+                                // Seed categories if table is empty
+                                CategoryDao categoryDao = database.categoryDao();
+                                List<Category> existingCategories = categoryDao.getAllCategories();
+                                if (existingCategories == null || existingCategories.isEmpty()) {
+                                    String[] names = {"Food", "Home", "Transport", "School", "Health", "Shopping", "Fun", "Other"};
+                                    for (int i = 0; i < names.length; i++) {
+                                        Category cat = new Category();
+                                        cat.name = names[i];
+                                        cat.budgetId = 0;
+                                        categoryDao.insertCategory(cat);
+                                    }
+                                }
+
+                                // Seed streak row if empty
+                                StreakDao streakDao = database.streakDao();
+                                Streak existingStreak = streakDao.getCurrentStreak();
+                                if (existingStreak == null) {
+                                    Streak streak = new Streak();
+                                    streak.counter = 0;
+                                    streak.last_updated = System.currentTimeMillis();
+                                    streak.start_Date = System.currentTimeMillis();
+                                    streakDao.insertNewStreak(streak);
+                                }
+
+                                // Seed settings row if empty
+                                SettingsDao settingsDao = database.settingsDao();
+                                Settings existingSettings = settingsDao.getSettings();
+                                if (existingSettings == null) {
+                                    Settings settings = new Settings();
+                                    settings.currency = "€";
+                                    settings.notifsEnabled = false;
+                                    settingsDao.insertSettings(settings);
+                                }
+                            });
+                        }
+                    }).build();
+                }
+            }
+        }
+        return INSTANCE;
     }
-
+}

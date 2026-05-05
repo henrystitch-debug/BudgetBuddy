@@ -1,52 +1,96 @@
 package com.github.budgetbuddy;
 
 import android.os.Bundle;
+import android.view.View;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.room.Room;
+import androidx.fragment.app.Fragment;
 
-import com.github.budgetbuddy.database.AppDatabase;
-import com.github.budgetbuddy.database.entity.Category;
-import com.github.budgetbuddy.database.entity.Expense;
+import com.github.budgetbuddy.ui.budget.CreateBudgetFragment;
+import com.github.budgetbuddy.ui.expense.AddExpenseFragment;
+import com.github.budgetbuddy.ui.myfinances.MyFinancesFragment;
+import com.github.budgetbuddy.ui.overview.OverviewFragment;
+import com.github.budgetbuddy.ui.settings.SettingsFragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity {
 
-    AppDatabase db;
+    BottomNavigationView bottomNav;
+    FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        db = Room.databaseBuilder(
-                getApplicationContext(),
-                AppDatabase.class,
-                "budget_buddy_db"
-        ).allowMainThreadQueries().build();
+        bottomNav = findViewById(R.id.bottom_navigation);
+        fab = findViewById(R.id.fab_add_expense);
 
-        //Test to initialize tables
+        // 預設選中 Home tab 並顯示 My Finances
+        loadFragment(new MyFinancesFragment());
+        bottomNav.setSelectedItemId(R.id.nav_home);
 
-        Category c = new Category();
-        c.name = "Food";
-        db.categoryDao().insertCategory(c);
-        Expense e = new Expense();
-        e.amount = 0;
-        e.categoryId = 1;
-        e.entryDate = System.currentTimeMillis();
-        e.note = "Test";
-        e.repeat = "NEVER";
+        bottomNav.setOnItemSelectedListener(item -> {
+            Fragment selected;
+            int id = item.getItemId();
 
-        db.expenseDao().insert(e);
+            if (id == R.id.nav_home) {
+                selected = new MyFinancesFragment();
+            } else if (id == R.id.nav_overview) {
+                selected = new OverviewFragment();
+            } else if (id == R.id.nav_budget) {
+                selected = new CreateBudgetFragment();
+            } else if (id == R.id.nav_settings) {
+                selected = new SettingsFragment();
+            } else {
+                return false;
+            }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+            loadFragment(selected);
+            return true;
         });
+
+        // FAB 開啟 Add Expense（隱藏底部導航）
+        fab.setOnClickListener(v -> {
+            bottomNav.setVisibility(View.GONE);
+            fab.setVisibility(View.GONE);
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, AddExpenseFragment.newInstance(-1))
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        // 關閉 Add Expense 後恢復底部導航
+        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                bottomNav.setVisibility(View.VISIBLE);
+                fab.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    public void loadFragment(Fragment fragment) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit();
+    }
+
+    public void navigateToOverview() {
+        bottomNav.setSelectedItemId(R.id.nav_overview);
+        loadFragment(new OverviewFragment());
+    }
+
+    public void showAddExpenseForEdit(int expenseId) {
+        bottomNav.setVisibility(View.GONE);
+        fab.setVisibility(View.GONE);
+        AddExpenseFragment fragment = AddExpenseFragment.newInstance(expenseId);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 }
