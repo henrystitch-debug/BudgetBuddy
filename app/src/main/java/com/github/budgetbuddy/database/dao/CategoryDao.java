@@ -26,7 +26,4 @@ public interface CategoryDao {
 
     @Query("UPDATE category SET budgetId = :budgetId WHERE id = :id")
     void updateBudgetId(int id, int budgetId);
-
-    @Query("UPDATE category SET budgetId = 0 WHERE budgetId = :budgetId")
-    void clearBudgetId(int budgetId);
 }

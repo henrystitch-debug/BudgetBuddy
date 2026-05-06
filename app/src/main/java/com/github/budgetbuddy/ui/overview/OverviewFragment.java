@@ -19,10 +19,11 @@ import com.github.budgetbuddy.MainActivity;
 import com.github.budgetbuddy.R;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.entity.Budget;
+import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Expense;
-import com.github.budgetbuddy.database.entity.Profile;
 import com.github.budgetbuddy.database.entity.Settings;
 import com.github.budgetbuddy.database.entity.Streak;
+import com.github.budgetbuddy.ui.onboarding.OnboardingActivity;
 import com.github.budgetbuddy.utils.CategoryUtils;
 import com.github.budgetbuddy.utils.TimeUtils;
 import com.github.mikephil.charting.charts.PieChart;
@@ -37,7 +38,6 @@ public class OverviewFragment extends Fragment {
 
     private long currentStartDate;
     private long currentEndDate;
-    private int activeProfileId = 0;
     private String currentCurrency = "€";
 
     private TextView tvGreeting, tvSubtitle;
@@ -93,28 +93,23 @@ public class OverviewFragment extends Fragment {
         tabLastMonth.setOnClickListener(v -> { setLastMonth(); updateTabStyles(1); });
         tabTwoWeeks.setOnClickListener(v  -> { setTwoWeeks();  updateTabStyles(2); });
 
-        loadActiveProfile();
+        loadGreetingAndCurrency();
     }
 
-    private void loadActiveProfile() {
+    private void loadGreetingAndCurrency() {
+        String name = OnboardingActivity.getUserName(requireContext());
         AppDatabase db = AppDatabase.getDatabase(requireContext());
         AppDatabase.databaseWriteExecutor.execute(() -> {
             Settings settings = db.settingsDao().getSettings();
-            int profileId = settings != null ? settings.activeProfileId : 0;
             String currency = settings != null && settings.currency != null ? settings.currency : "€";
-            Profile profile = profileId > 0 ? db.profileDao().getProfileById(profileId) : null;
-            Streak streak = profile != null ? db.streakDao().getStreakForProfile(profile.id) : null;
-
-            final String name = profile != null ? profile.name : "";
+            Streak streak = db.streakDao().getCurrentStreak();
             final int streakCount = streak != null ? streak.counter : 0;
-            final int finalProfileId = profile != null ? profile.id : 0;
 
             if (!isAdded()) return;
             requireActivity().runOnUiThread(() -> {
                 if (!isAdded()) return;
-                activeProfileId  = finalProfileId;
-                currentCurrency  = currency;
-                tvGreeting.setText("Hey, " + name + "!");
+                currentCurrency = currency;
+                tvGreeting.setText("Hey, " + (name != null ? name : "there") + "!");
                 if (streakCount > 0) {
                     tvSubtitle.setText("🔥 " + streakCount + "-day streak — keep it up!");
                 } else {
@@ -163,16 +158,14 @@ public class OverviewFragment extends Fragment {
     }
 
     private void loadDetailData() {
-        if (activeProfileId <= 0) return;
         AppDatabase db = AppDatabase.getDatabase(requireContext());
         long startDate = currentStartDate;
         long endDate   = currentEndDate;
-        int profileId  = activeProfileId;
+        long monthStart = TimeUtils.getStartOfMonth(0);
+        long monthEnd   = TimeUtils.getEndOfMonth(0);
 
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            List<Budget> profileBudgets = db.budgetDao().getBudgetsByProfile(profileId);
-
-            List<Expense> allExpenses = db.expenseDao().getExpensesByProfileAndInterval(profileId, startDate, endDate);
+            List<Expense> allExpenses = db.expenseDao().getExpensesInterval(startDate, endDate);
             double[] categoryTotals = new double[13];
             for (Expense e : allExpenses) {
                 if (e.categoryId >= 1 && e.categoryId <= 12) {
@@ -183,13 +176,18 @@ public class OverviewFragment extends Fragment {
             for (int i = 1; i <= 12; i++) totalSpent += categoryTotals[i];
             final double finalTotalSpent = totalSpent;
 
-            List<Expense> allPeriodExpenses = db.expenseDao().getRecentExpensesByProfile(profileId, startDate, endDate, 1000);
+            List<Expense> recent = db.expenseDao().getRecentExpenses(startDate, endDate, 1000);
 
+            // Per-category budget progress: for each category, look up its current-month budget
+            // via Category.budgetId (single-user model: budget is global per category per month)
             List<int[]> progressRows = new ArrayList<>();
-            for (Budget b : profileBudgets) {
-                if (b.categoryId == 0 || b.limit <= 0) continue;
-                if (b.startDate != startDate || b.endDate != endDate) continue;
-                progressRows.add(new int[]{b.categoryId, b.limit});
+            for (int catId = 1; catId <= 12; catId++) {
+                Category cat = db.categoryDao().getCategoryById(catId);
+                if (cat == null || cat.budgetId <= 0) continue;
+                Budget b = db.budgetDao().getBudgetById(cat.budgetId);
+                if (b == null || b.limit <= 0) continue;
+                if (b.startDate != monthStart || b.endDate != monthEnd) continue;
+                progressRows.add(new int[]{catId, (int) b.limit});
             }
 
             if (!isAdded()) return;
@@ -197,8 +195,8 @@ public class OverviewFragment extends Fragment {
                 if (!isAdded()) return;
                 updatePieChart(categoryTotals, finalTotalSpent);
                 updateBudgetProgress(progressRows, categoryTotals);
-                currentExpenses = allPeriodExpenses;
-                expensesExpanded = false; // reset to collapsed when switching tabs
+                currentExpenses = recent;
+                expensesExpanded = false;
                 renderExpenses();
             });
         });

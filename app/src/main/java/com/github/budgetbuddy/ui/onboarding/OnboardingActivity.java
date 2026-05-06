@@ -1,6 +1,8 @@
 package com.github.budgetbuddy.ui.onboarding;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -10,12 +12,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.github.budgetbuddy.MainActivity;
 import com.github.budgetbuddy.R;
-import com.github.budgetbuddy.database.AppDatabase;
-import com.github.budgetbuddy.database.entity.Profile;
-import com.github.budgetbuddy.database.entity.Settings;
-import com.github.budgetbuddy.database.entity.Streak;
 
 public class OnboardingActivity extends AppCompatActivity {
+
+    public static final String PREFS_NAME = "budget_buddy_prefs";
+    public static final String KEY_USER_NAME = "user_name";
 
     private EditText etName;
 
@@ -36,44 +37,25 @@ public class OnboardingActivity extends AppCompatActivity {
             return;
         }
 
-        AppDatabase db = AppDatabase.getDatabase(this);
-        AppDatabase.databaseWriteExecutor.execute(() -> {
-            Profile existing = db.profileDao().getProfileByName(name);
-            int profileId;
-            boolean isReturning;
-            if (existing != null) {
-                profileId = existing.id;
-                isReturning = true;
-            } else {
-                Profile p = new Profile();
-                p.name = name;
-                long newId = db.profileDao().insertProfile(p);
-                profileId = (int) newId;
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString(KEY_USER_NAME, name).apply();
 
-                Streak streak = new Streak();
-                streak.counter      = 0;
-                streak.last_updated = 0;
-                streak.start_Date   = System.currentTimeMillis();
-                streak.profileId    = profileId;
-                db.streakDao().insertNewStreak(streak);
-                isReturning = false;
-            }
+        Toast.makeText(this, "Hi " + name + "!", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
+    }
 
-            Settings settings = db.settingsDao().getSettings();
-            if (settings != null) {
-                db.settingsDao().setActiveProfileId(settings.id, profileId);
-            }
+    public static String getUserName(Context ctx) {
+        return ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .getString(KEY_USER_NAME, null);
+    }
 
-            final boolean returning = isReturning;
-            runOnUiThread(() -> {
-                Toast.makeText(this,
-                        returning ? "Welcome back, " + name + "!" : "Hi " + name + ", let's get started!",
-                        Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(OnboardingActivity.this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                finish();
-            });
-        });
+    public static void setUserName(Context ctx, String name) {
+        ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putString(KEY_USER_NAME, name)
+                .apply();
     }
 }

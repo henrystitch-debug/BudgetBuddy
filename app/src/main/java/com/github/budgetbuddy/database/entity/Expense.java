@@ -13,5 +13,4 @@ public class Expense {
     public long entryDate;
     public String note;
     public String repeat;
-    public int profileId;
 }

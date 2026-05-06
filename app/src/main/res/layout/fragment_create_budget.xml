@@ -36,12 +36,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="4dp">
+            android:layout_marginBottom="8dp">
 
             <LinearLayout android:id="@+id/cat_food"
                 android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical"
-                android:gravity="center" android:padding="10dp"
+                android:gravity="center" android:padding="18dp"
                 android:background="#F5F5F5" android:layout_marginEnd="4dp"
                 android:clickable="true" android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🍴" android:textSize="22sp"/>
@@ -51,7 +51,7 @@
             <LinearLayout android:id="@+id/cat_home"
                 android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical"
-                android:gravity="center" android:padding="10dp"
+                android:gravity="center" android:padding="18dp"
                 android:background="#F5F5F5" android:layout_marginEnd="4dp"
                 android:clickable="true" android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🏠" android:textSize="22sp"/>
@@ -61,7 +61,7 @@
             <LinearLayout android:id="@+id/cat_transport"
                 android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical"
-                android:gravity="center" android:padding="10dp"
+                android:gravity="center" android:padding="18dp"
                 android:background="#F5F5F5" android:layout_marginEnd="4dp"
                 android:clickable="true" android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🚌" android:textSize="22sp"/>
@@ -71,7 +71,7 @@
             <LinearLayout android:id="@+id/cat_school"
                 android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical"
-                android:gravity="center" android:padding="10dp"
+                android:gravity="center" android:padding="18dp"
                 android:background="#F5F5F5"
                 android:clickable="true" android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📚" android:textSize="22sp"/>
@@ -90,7 +90,7 @@
             <LinearLayout android:id="@+id/cat_health"
                 android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical"
-                android:gravity="center" android:padding="10dp"
+                android:gravity="center" android:padding="18dp"
                 android:background="#F5F5F5" android:layout_marginEnd="4dp"
                 android:clickable="true" android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="❤️" android:textSize="22sp"/>
@@ -100,7 +100,7 @@
             <LinearLayout android:id="@+id/cat_shopping"
                 android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical"
-                android:gravity="center" android:padding="10dp"
+                android:gravity="center" android:padding="18dp"
                 android:background="#F5F5F5" android:layout_marginEnd="4dp"
                 android:clickable="true" android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🛍️" android:textSize="22sp"/>
@@ -110,7 +110,7 @@
             <LinearLayout android:id="@+id/cat_fun"
                 android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical"
-                android:gravity="center" android:padding="10dp"
+                android:gravity="center" android:padding="18dp"
                 android:background="#F5F5F5" android:layout_marginEnd="4dp"
                 android:clickable="true" android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="⭐" android:textSize="22sp"/>
@@ -120,7 +120,7 @@
             <LinearLayout android:id="@+id/cat_coffee"
                 android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical"
-                android:gravity="center" android:padding="10dp"
+                android:gravity="center" android:padding="18dp"
                 android:background="#F5F5F5"
                 android:clickable="true" android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="☕" android:textSize="22sp"/>
@@ -139,7 +139,7 @@
             <LinearLayout android:id="@+id/cat_travel"
                 android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical"
-                android:gravity="center" android:padding="10dp"
+                android:gravity="center" android:padding="18dp"
                 android:background="#F5F5F5" android:layout_marginEnd="4dp"
                 android:clickable="true" android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="✈️" android:textSize="22sp"/>
@@ -149,7 +149,7 @@
             <LinearLayout android:id="@+id/cat_gift"
                 android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical"
-                android:gravity="center" android:padding="10dp"
+                android:gravity="center" android:padding="18dp"
                 android:background="#F5F5F5" android:layout_marginEnd="4dp"
                 android:clickable="true" android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🎁" android:textSize="22sp"/>
@@ -159,7 +159,7 @@
             <LinearLayout android:id="@+id/cat_pet"
                 android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical"
-                android:gravity="center" android:padding="10dp"
+                android:gravity="center" android:padding="18dp"
                 android:background="#F5F5F5" android:layout_marginEnd="4dp"
                 android:clickable="true" android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🐾" android:textSize="22sp"/>
@@ -169,7 +169,7 @@
             <LinearLayout android:id="@+id/cat_other"
                 android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical"
-                android:gravity="center" android:padding="10dp"
+                android:gravity="center" android:padding="18dp"
                 android:background="#F5F5F5"
                 android:clickable="true" android:focusable="true">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="···" android:textSize="18sp"/>

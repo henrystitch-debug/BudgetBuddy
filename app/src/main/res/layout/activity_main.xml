@@ -24,17 +24,17 @@
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_expense"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
         android:contentDescription="Add Expense"
         android:src="@drawable/ic_add"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="14dp"
         app:backgroundTint="#4A7C7C"
         app:tint="#FFFFFF"
-        app:elevation="10dp"
-        app:maxImageSize="32dp"
+        app:elevation="8dp"
+        app:maxImageSize="24dp"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -17,6 +17,7 @@ import com.github.budgetbuddy.R;
 import com.github.budgetbuddy.api.ClaudeApiHelper;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.entity.Budget;
+import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Settings;
 import com.github.budgetbuddy.utils.CategoryUtils;
 import com.github.budgetbuddy.utils.TimeUtils;
@@ -25,7 +26,6 @@ public class CreateBudgetFragment extends Fragment {
 
     private int selectedCategoryId = -1;
     private int existingBudgetId = -1;
-    private int activeProfileId = 0;
     private String currentCurrency = "€";
 
     private View cardBudgetInfo, cardAiResult, cardInput, btnAiRecommend, btnSaveBudget, labelSetBudget;
@@ -70,19 +70,18 @@ public class CreateBudgetFragment extends Fragment {
             categoryContainers[i].setOnClickListener(v -> onCategorySelected(catId));
         }
 
-        loadSettings();
+        loadCurrency();
 
         btnAiRecommend.setOnClickListener(v -> getAiRecommendation());
         btnSaveBudget.setOnClickListener(v -> saveBudget());
     }
 
-    private void loadSettings() {
+    private void loadCurrency() {
         AppDatabase.databaseWriteExecutor.execute(() -> {
             try {
                 Settings settings = AppDatabase.getDatabase(requireContext()).settingsDao().getSettings();
-                if (settings != null) {
-                    if (settings.currency != null) currentCurrency = settings.currency;
-                    activeProfileId = settings.activeProfileId;
+                if (settings != null && settings.currency != null) {
+                    currentCurrency = settings.currency;
                 }
             } catch (Exception ignored) {}
         });
@@ -109,17 +108,16 @@ public class CreateBudgetFragment extends Fragment {
         long end   = TimeUtils.getEndOfMonth(0);
 
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            // Always read the latest active profile in case it changed
-            Settings settings = db.settingsDao().getSettings();
-            int profileId = settings != null ? settings.activeProfileId : 0;
-            activeProfileId = profileId;
-
+            Category cat = db.categoryDao().getCategoryById(categoryId);
             Budget budget = null;
-            double spent = 0;
-            if (profileId > 0) {
-                budget = db.budgetDao().getBudgetForProfileCategoryInterval(profileId, categoryId, start, end);
-                spent  = db.expenseDao().getTotalForProfileCategoryAndInterval(profileId, categoryId, start, end);
+            if (cat != null && cat.budgetId > 0) {
+                Budget candidate = db.budgetDao().getBudgetById(cat.budgetId);
+                // Only treat as "current" if it matches the active month
+                if (candidate != null && candidate.startDate == start && candidate.endDate == end) {
+                    budget = candidate;
+                }
             }
+            double spent = db.expenseDao().getTotalForCategoryAndInterval(categoryId, start, end);
 
             final Budget finalBudget = budget;
             final double finalSpent  = spent;
@@ -138,7 +136,7 @@ public class CreateBudgetFragment extends Fragment {
                 tvSpent.setText(String.format("%s %.2f", currentCurrency, finalSpent));
 
                 if (finalBudget != null && finalBudget.limit > 0) {
-                    tvCurrentLimit.setText(String.format("%s %,d", currentCurrency, finalBudget.limit));
+                    tvCurrentLimit.setText(String.format("%s %d", currentCurrency, finalBudget.limit));
                     etBudgetAmount.setText(String.valueOf(finalBudget.limit));
                 } else {
                     tvCurrentLimit.setText("Not set");
@@ -210,29 +208,17 @@ public class CreateBudgetFragment extends Fragment {
         long end   = TimeUtils.getEndOfMonth(0);
 
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            Settings settings = db.settingsDao().getSettings();
-            int profileId = settings != null ? settings.activeProfileId : 0;
-            if (profileId <= 0) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> Toast.makeText(requireContext(),
-                        "No active user. Please complete setup first.", Toast.LENGTH_LONG).show());
-                return;
-            }
-
-            Budget existing = db.budgetDao().getBudgetForProfileCategoryInterval(
-                    profileId, selectedCategoryId, start, end);
-
-            if (existing != null) {
-                db.budgetDao().updateBudget(existing.id, amount, start, end);
+            if (existingBudgetId > 0) {
+                db.budgetDao().updateBudget(existingBudgetId, amount, start, end);
             } else {
                 Budget newBudget = new Budget();
                 newBudget.limit          = amount;
                 newBudget.current_amount = 0;
                 newBudget.startDate      = start;
                 newBudget.endDate        = end;
-                newBudget.profileId      = profileId;
-                newBudget.categoryId     = selectedCategoryId;
-                db.budgetDao().insertBudget(newBudget);
+                long newId = db.budgetDao().insertBudgetGetId(newBudget);
+                db.categoryDao().updateBudgetId(selectedCategoryId, (int) newId);
+                existingBudgetId = (int) newId;
             }
 
             if (!isAdded()) return;

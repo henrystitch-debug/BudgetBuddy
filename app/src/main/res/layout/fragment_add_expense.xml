@@ -83,7 +83,8 @@
     <!-- Category Grid Row 1 -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="horizontal"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
@@ -93,7 +94,7 @@
         <LinearLayout
             android:id="@+id/cat_food"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
@@ -121,7 +122,7 @@
         <LinearLayout
             android:id="@+id/cat_home"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
@@ -149,7 +150,7 @@
         <LinearLayout
             android:id="@+id/cat_transport"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
@@ -177,7 +178,7 @@
         <LinearLayout
             android:id="@+id/cat_school"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
@@ -205,7 +206,8 @@
     <!-- Category Grid Row 2 -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="horizontal"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
@@ -215,7 +217,7 @@
         <LinearLayout
             android:id="@+id/cat_health"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
@@ -243,7 +245,7 @@
         <LinearLayout
             android:id="@+id/cat_shopping"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
@@ -271,7 +273,7 @@
         <LinearLayout
             android:id="@+id/cat_fun"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
@@ -299,7 +301,7 @@
         <LinearLayout
             android:id="@+id/cat_coffee"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
@@ -327,7 +329,8 @@
     <!-- Category Grid Row 3 -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="horizontal"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
@@ -337,7 +340,7 @@
         <LinearLayout
             android:id="@+id/cat_travel"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
@@ -365,7 +368,7 @@
         <LinearLayout
             android:id="@+id/cat_gift"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
@@ -393,7 +396,7 @@
         <LinearLayout
             android:id="@+id/cat_pet"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
@@ -421,7 +424,7 @@
         <LinearLayout
             android:id="@+id/cat_other"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
@@ -445,11 +448,6 @@
         </LinearLayout>
 
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
 
     <!-- Cancel + Save buttons -->
     <LinearLayout

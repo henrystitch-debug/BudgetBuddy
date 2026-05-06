@@ -10,5 +10,5 @@ public class Streak {
     public int counter;
     public long last_updated;
     public long start_Date;
-    public int profileId;
+
 }

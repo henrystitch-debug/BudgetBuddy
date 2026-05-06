@@ -14,9 +14,7 @@ import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
-import com.github.budgetbuddy.database.AppDatabase;
-import com.github.budgetbuddy.database.entity.Profile;
-import com.github.budgetbuddy.database.entity.Settings;
+import com.github.budgetbuddy.ui.onboarding.OnboardingActivity;
 
 import java.util.concurrent.TimeUnit;
 
@@ -65,11 +63,7 @@ public class NotificationHelper {
 
     private static String lookupActiveUserName(Context context) {
         try {
-            AppDatabase db = AppDatabase.getDatabase(context);
-            Settings s = db.settingsDao().getSettings();
-            if (s == null || s.activeProfileId <= 0) return null;
-            Profile p = db.profileDao().getProfileById(s.activeProfileId);
-            return p != null ? p.name : null;
+            return OnboardingActivity.getUserName(context);
         } catch (Exception e) {
             return null;
         }

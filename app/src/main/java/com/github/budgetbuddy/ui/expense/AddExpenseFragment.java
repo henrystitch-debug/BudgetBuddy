@@ -17,8 +17,6 @@ import com.github.budgetbuddy.MainActivity;
 import com.github.budgetbuddy.R;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.entity.Expense;
-import com.github.budgetbuddy.database.entity.Profile;
-import com.github.budgetbuddy.database.entity.Settings;
 import com.github.budgetbuddy.database.entity.Streak;
 
 import java.util.Calendar;
@@ -181,25 +179,15 @@ public class AddExpenseFragment extends Fragment {
             });
         } else {
             AppDatabase.databaseWriteExecutor.execute(() -> {
-                Settings settings = db.settingsDao().getSettings();
-                int activeId = settings != null ? settings.activeProfileId : 0;
-                if (activeId <= 0) {
-                    if (!isAdded()) return;
-                    requireActivity().runOnUiThread(() -> Toast.makeText(getContext(),
-                            "No active user. Please complete setup first.", Toast.LENGTH_LONG).show());
-                    return;
-                }
-
                 Expense expense = new Expense();
                 expense.amount     = amount;
                 expense.categoryId = selectedCategoryId;
                 expense.entryDate  = now;
                 expense.note       = note;
                 expense.repeat     = "";
-                expense.profileId  = activeId;
                 db.expenseDao().insert(expense);
 
-                updateStreakAfterLog(db, activeId, now);
+                updateStreakAfterLog(db, now);
 
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
@@ -219,18 +207,10 @@ public class AddExpenseFragment extends Fragment {
         etAmount.requestFocus();
     }
 
-    /** Increment day-streak if last log was yesterday; reset to 1 if older; no-op for same day. */
-    private static void updateStreakAfterLog(AppDatabase db, int profileId, long now) {
-        Streak streak = db.streakDao().getStreakForProfile(profileId);
-        if (streak == null) {
-            streak = new Streak();
-            streak.counter      = 1;
-            streak.last_updated = now;
-            streak.start_Date   = now;
-            streak.profileId    = profileId;
-            db.streakDao().insertNewStreak(streak);
-            return;
-        }
+    /** Day-streak: same day = no change, next day = +1, gap > 1 = reset to 1. */
+    private static void updateStreakAfterLog(AppDatabase db, long now) {
+        Streak streak = db.streakDao().getCurrentStreak();
+        if (streak == null) return;
 
         long lastUpdated = streak.last_updated;
         int days = daysBetween(lastUpdated, now);
@@ -240,10 +220,9 @@ public class AddExpenseFragment extends Fragment {
         } else if (days == 1) {
             newCount = streak.counter + 1;
         } else {
-            // same day; no change
-            return;
+            return; // same day, no-op
         }
-        db.streakDao().updateStreakForProfile(profileId, newCount, now);
+        db.streakDao().updateCurrentStreak(newCount, now);
     }
 
     private static int daysBetween(long fromMillis, long toMillis) {
