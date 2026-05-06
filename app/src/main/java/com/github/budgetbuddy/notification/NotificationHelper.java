@@ -14,6 +14,10 @@ import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
+import com.github.budgetbuddy.database.AppDatabase;
+import com.github.budgetbuddy.database.entity.Profile;
+import com.github.budgetbuddy.database.entity.Settings;
+
 import java.util.concurrent.TimeUnit;
 
 public class NotificationHelper {
@@ -40,10 +44,15 @@ public class NotificationHelper {
     public static void showDailyReminder(Context context) {
         createNotificationChannel(context);
 
+        String name = lookupActiveUserName(context);
+        String body = name != null
+                ? "Hey " + name + ", don't forget to log today's expenses!"
+                : "Don't forget to log your expenses today!";
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle("BudgetBuddy 💰")
-                .setContentText("Don't forget to log your expenses today!")
+                .setContentText(body)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
 
@@ -51,6 +60,18 @@ public class NotificationHelper {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
                 == PackageManager.PERMISSION_GRANTED) {
             notificationManager.notify(NOTIFICATION_ID, builder.build());
+        }
+    }
+
+    private static String lookupActiveUserName(Context context) {
+        try {
+            AppDatabase db = AppDatabase.getDatabase(context);
+            Settings s = db.settingsDao().getSettings();
+            if (s == null || s.activeProfileId <= 0) return null;
+            Profile p = db.profileDao().getProfileById(s.activeProfileId);
+            return p != null ? p.name : null;
+        } catch (Exception e) {
+            return null;
         }
     }
 

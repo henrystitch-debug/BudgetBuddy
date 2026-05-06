@@ -13,7 +13,7 @@ public interface StreakDao {
     void insertNewStreak(Streak streak);
 
     @Query("UPDATE streak SET counter = :amount WHERE id = :id")
-    void updateStreak(int id, double amount);
+    void updateStreak(int id, int amount);
 
     @Query("SELECT * FROM streak WHERE id = :id")
     Streak getStreakById(int id);
@@ -26,4 +26,13 @@ public interface StreakDao {
 
     @Query("UPDATE streak SET counter = :count, last_updated = :timestamp WHERE id = 1")
     void updateCurrentStreak(int count, long timestamp);
+
+    @Query("SELECT * FROM streak WHERE profileId = :profileId LIMIT 1")
+    Streak getStreakForProfile(int profileId);
+
+    @Query("UPDATE streak SET counter = :count, last_updated = :timestamp WHERE profileId = :profileId")
+    void updateStreakForProfile(int profileId, int count, long timestamp);
+
+    @Query("DELETE FROM streak WHERE profileId = :profileId")
+    void deleteByProfileId(int profileId);
 }

@@ -11,4 +11,6 @@ public class Budget {
     public int current_amount;
     public long startDate;
     public long endDate;
+    public int profileId;
+    public int categoryId;
 }

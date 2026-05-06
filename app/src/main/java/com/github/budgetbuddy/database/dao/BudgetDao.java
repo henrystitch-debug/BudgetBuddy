@@ -32,4 +32,13 @@ public interface BudgetDao {
 
     @Query("SELECT COALESCE(SUM(`limit`), 0) FROM budget WHERE startDate >= :startDate AND endDate <= :endDate")
     double getTotalBudgetLimitForInterval(long startDate, long endDate);
+
+    @Query("SELECT * FROM budget WHERE profileId = :profileId")
+    List<Budget> getBudgetsByProfile(int profileId);
+
+    @Query("DELETE FROM budget WHERE profileId = :profileId")
+    void deleteByProfileId(int profileId);
+
+    @Query("SELECT * FROM budget WHERE profileId = :profileId AND categoryId = :categoryId AND startDate = :start AND endDate = :end LIMIT 1")
+    Budget getBudgetForProfileCategoryInterval(int profileId, int categoryId, long start, long end);
 }

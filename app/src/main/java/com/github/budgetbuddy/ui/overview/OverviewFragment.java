@@ -19,8 +19,9 @@ import com.github.budgetbuddy.MainActivity;
 import com.github.budgetbuddy.R;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.entity.Budget;
-import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Expense;
+import com.github.budgetbuddy.database.entity.Profile;
+import com.github.budgetbuddy.database.entity.Settings;
 import com.github.budgetbuddy.database.entity.Streak;
 import com.github.budgetbuddy.utils.CategoryUtils;
 import com.github.budgetbuddy.utils.TimeUtils;
@@ -36,36 +37,45 @@ public class OverviewFragment extends Fragment {
 
     private long currentStartDate;
     private long currentEndDate;
+    private int activeProfileId = 0;
+    private String currentCurrency = "€";
 
-    private TextView tvMonth;
-    private TextView tabThisMonth, tabLastMonth, tabTwoWeeks;
-    private View cardStreak;
-    private TextView tvStreakCount, tvStreakX;
+    private TextView tvGreeting, tvSubtitle;
+    private TextView tvMonth, tabThisMonth, tabLastMonth, tabTwoWeeks;
     private PieChart pieChart;
     private LinearLayout legendContainer;
     private LinearLayout budgetProgressContainer;
     private RecyclerView rvExpenses;
+    private TextView tvSeeAllExpenses;
     private ExpenseAdapter expenseAdapter;
+
+    private static final int COLLAPSED_COUNT = 3;
+    private boolean expensesExpanded = false;
+    private List<Expense> currentExpenses = new ArrayList<>();
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_overview, container, false);
+        return inflater.inflate(R.layout.fragment_overview, container, false);
+    }
 
-        tvMonth = view.findViewById(R.id.tv_month);
-        tabThisMonth = view.findViewById(R.id.tab_this_month);
-        tabLastMonth = view.findViewById(R.id.tab_last_month);
-        tabTwoWeeks = view.findViewById(R.id.tab_two_weeks);
-        cardStreak = view.findViewById(R.id.card_streak);
-        tvStreakCount = view.findViewById(R.id.tv_streak_count);
-        tvStreakX = view.findViewById(R.id.tv_streak_x);
-        pieChart = view.findViewById(R.id.pie_chart);
-        legendContainer = view.findViewById(R.id.legend_container);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        tvGreeting              = view.findViewById(R.id.tv_greeting);
+        tvSubtitle              = view.findViewById(R.id.tv_subtitle);
+        tvMonth                 = view.findViewById(R.id.tv_month);
+        tabThisMonth            = view.findViewById(R.id.tab_this_month);
+        tabLastMonth            = view.findViewById(R.id.tab_last_month);
+        tabTwoWeeks             = view.findViewById(R.id.tab_two_weeks);
+        pieChart                = view.findViewById(R.id.pie_chart);
+        legendContainer         = view.findViewById(R.id.legend_container);
         budgetProgressContainer = view.findViewById(R.id.budget_progress_container);
-        rvExpenses = view.findViewById(R.id.rv_expenses);
+        rvExpenses              = view.findViewById(R.id.rv_expenses);
+        tvSeeAllExpenses        = view.findViewById(R.id.tv_see_all_expenses);
 
-        // Setup RecyclerView
         expenseAdapter = new ExpenseAdapter(new ArrayList<>(), expenseId -> {
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).showAddExpenseForEdit(expenseId);
@@ -74,52 +84,72 @@ public class OverviewFragment extends Fragment {
         rvExpenses.setLayoutManager(new LinearLayoutManager(getContext()));
         rvExpenses.setAdapter(expenseAdapter);
 
-        // Default: this month
-        setThisMonth();
-
-        // Tab click listeners
-        tabThisMonth.setOnClickListener(v -> {
-            setThisMonth();
-            updateTabStyles(0);
-        });
-        tabLastMonth.setOnClickListener(v -> {
-            setLastMonth();
-            updateTabStyles(1);
-        });
-        tabTwoWeeks.setOnClickListener(v -> {
-            setTwoWeeks();
-            updateTabStyles(2);
+        tvSeeAllExpenses.setOnClickListener(v -> {
+            expensesExpanded = !expensesExpanded;
+            renderExpenses();
         });
 
-        return view;
+        tabThisMonth.setOnClickListener(v -> { setThisMonth(); updateTabStyles(0); });
+        tabLastMonth.setOnClickListener(v -> { setLastMonth(); updateTabStyles(1); });
+        tabTwoWeeks.setOnClickListener(v  -> { setTwoWeeks();  updateTabStyles(2); });
+
+        loadActiveProfile();
+    }
+
+    private void loadActiveProfile() {
+        AppDatabase db = AppDatabase.getDatabase(requireContext());
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            Settings settings = db.settingsDao().getSettings();
+            int profileId = settings != null ? settings.activeProfileId : 0;
+            String currency = settings != null && settings.currency != null ? settings.currency : "€";
+            Profile profile = profileId > 0 ? db.profileDao().getProfileById(profileId) : null;
+            Streak streak = profile != null ? db.streakDao().getStreakForProfile(profile.id) : null;
+
+            final String name = profile != null ? profile.name : "";
+            final int streakCount = streak != null ? streak.counter : 0;
+            final int finalProfileId = profile != null ? profile.id : 0;
+
+            if (!isAdded()) return;
+            requireActivity().runOnUiThread(() -> {
+                if (!isAdded()) return;
+                activeProfileId  = finalProfileId;
+                currentCurrency  = currency;
+                tvGreeting.setText("Hey, " + name + "!");
+                if (streakCount > 0) {
+                    tvSubtitle.setText("🔥 " + streakCount + "-day streak — keep it up!");
+                } else {
+                    tvSubtitle.setText("Log an expense to start your streak.");
+                }
+                setThisMonth();
+            });
+        });
     }
 
     private void setThisMonth() {
         currentStartDate = TimeUtils.getStartOfMonth(0);
-        currentEndDate = TimeUtils.getEndOfMonth(0);
+        currentEndDate   = TimeUtils.getEndOfMonth(0);
         tvMonth.setText(TimeUtils.getMonthLabel(0));
         updateTabStyles(0);
-        loadData();
+        loadDetailData();
     }
 
     private void setLastMonth() {
         currentStartDate = TimeUtils.getStartOfMonth(1);
-        currentEndDate = TimeUtils.getEndOfMonth(1);
+        currentEndDate   = TimeUtils.getEndOfMonth(1);
         tvMonth.setText(TimeUtils.getMonthLabel(1));
         updateTabStyles(1);
-        loadData();
+        loadDetailData();
     }
 
     private void setTwoWeeks() {
         currentStartDate = TimeUtils.getStartOfTwoWeeksAgo();
-        currentEndDate = TimeUtils.getNow();
+        currentEndDate   = TimeUtils.getNow();
         tvMonth.setText("Last 2 Weeks");
         updateTabStyles(2);
-        loadData();
+        loadDetailData();
     }
 
     private void updateTabStyles(int selected) {
-        // Reset all
         tabThisMonth.setBackgroundColor(Color.parseColor("#F0F0F0"));
         tabThisMonth.setTextColor(Color.parseColor("#888888"));
         tabLastMonth.setBackgroundColor(Color.parseColor("#F0F0F0"));
@@ -127,91 +157,78 @@ public class OverviewFragment extends Fragment {
         tabTwoWeeks.setBackgroundColor(Color.parseColor("#F0F0F0"));
         tabTwoWeeks.setTextColor(Color.parseColor("#888888"));
 
-        // Highlight selected
-        TextView selectedTab;
-        if (selected == 0) selectedTab = tabThisMonth;
-        else if (selected == 1) selectedTab = tabLastMonth;
-        else selectedTab = tabTwoWeeks;
-
+        TextView selectedTab = selected == 0 ? tabThisMonth : selected == 1 ? tabLastMonth : tabTwoWeeks;
         selectedTab.setBackgroundColor(Color.parseColor("#4A7C7C"));
         selectedTab.setTextColor(Color.WHITE);
     }
 
-    private void loadData() {
+    private void loadDetailData() {
+        if (activeProfileId <= 0) return;
         AppDatabase db = AppDatabase.getDatabase(requireContext());
         long startDate = currentStartDate;
-        long endDate = currentEndDate;
+        long endDate   = currentEndDate;
+        int profileId  = activeProfileId;
 
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            // Load streak
-            Streak streak = db.streakDao().getCurrentStreak();
+            List<Budget> profileBudgets = db.budgetDao().getBudgetsByProfile(profileId);
 
-            // Load all categories
-            List<Category> categories = db.categoryDao().getAllCategories();
-
-            // Load recent expenses (up to 10)
-            List<Expense> recentExpenses = db.expenseDao().getRecentExpenses(startDate, endDate, 10);
-
-            // Load all expenses for pie chart
-            List<Expense> allExpenses = db.expenseDao().getExpensesInterval(startDate, endDate);
-
-            // Compute spending per category for pie chart
-            double[] categoryTotals = new double[9]; // index 1..8
+            List<Expense> allExpenses = db.expenseDao().getExpensesByProfileAndInterval(profileId, startDate, endDate);
+            double[] categoryTotals = new double[13];
             for (Expense e : allExpenses) {
-                if (e.categoryId >= 1 && e.categoryId <= 8) {
+                if (e.categoryId >= 1 && e.categoryId <= 12) {
                     categoryTotals[e.categoryId] += e.amount;
                 }
             }
             double totalSpent = 0;
-            for (int i = 1; i <= 8; i++) {
-                totalSpent += categoryTotals[i];
-            }
+            for (int i = 1; i <= 12; i++) totalSpent += categoryTotals[i];
             final double finalTotalSpent = totalSpent;
 
-            // Load budgets for categories with budgetId > 0
-            // For each category with a budget, get spent amount
-            List<BudgetProgressItem> progressItems = new ArrayList<>();
-            for (Category cat : categories) {
-                if (cat.budgetId > 0) {
-                    Budget budget = db.budgetDao().getBudgetById(cat.budgetId);
-                    if (budget != null) {
-                        double spent = db.expenseDao().getTotalForCategoryAndInterval(cat.id, startDate, endDate);
-                        progressItems.add(new BudgetProgressItem(cat.name, spent, budget.limit));
-                    }
-                }
+            List<Expense> allPeriodExpenses = db.expenseDao().getRecentExpensesByProfile(profileId, startDate, endDate, 1000);
+
+            List<int[]> progressRows = new ArrayList<>();
+            for (Budget b : profileBudgets) {
+                if (b.categoryId == 0 || b.limit <= 0) continue;
+                if (b.startDate != startDate || b.endDate != endDate) continue;
+                progressRows.add(new int[]{b.categoryId, b.limit});
             }
 
             if (!isAdded()) return;
-
             requireActivity().runOnUiThread(() -> {
                 if (!isAdded()) return;
-
-                // Update streak card
-                if (streak != null && streak.counter > 0) {
-                    cardStreak.setVisibility(View.VISIBLE);
-                    tvStreakCount.setText(streak.counter + " month streak!");
-                    tvStreakX.setText("x" + streak.counter);
-                } else {
-                    cardStreak.setVisibility(View.GONE);
-                }
-
-                // Update pie chart
                 updatePieChart(categoryTotals, finalTotalSpent);
-
-                // Update budget progress
-                updateBudgetProgress(progressItems);
-
-                // Update recent expenses list
-                expenseAdapter.updateExpenses(recentExpenses);
+                updateBudgetProgress(progressRows, categoryTotals);
+                currentExpenses = allPeriodExpenses;
+                expensesExpanded = false; // reset to collapsed when switching tabs
+                renderExpenses();
             });
         });
     }
 
+    private void renderExpenses() {
+        int total = currentExpenses.size();
+        List<Expense> toShow;
+        if (expensesExpanded || total <= COLLAPSED_COUNT) {
+            toShow = currentExpenses;
+        } else {
+            toShow = currentExpenses.subList(0, COLLAPSED_COUNT);
+        }
+        expenseAdapter.updateExpenses(toShow);
+
+        if (total <= COLLAPSED_COUNT) {
+            tvSeeAllExpenses.setVisibility(View.GONE);
+        } else {
+            tvSeeAllExpenses.setVisibility(View.VISIBLE);
+            tvSeeAllExpenses.setText(expensesExpanded
+                    ? "Show less"
+                    : "See all (" + total + ")");
+        }
+    }
+
     private void updatePieChart(double[] categoryTotals, double totalSpent) {
         List<PieEntry> entries = new ArrayList<>();
-        List<Integer> colors = new ArrayList<>();
+        List<Integer> colors  = new ArrayList<>();
 
-        for (int i = 1; i <= 8; i++) {
+        for (int i = 1; i <= 12; i++) {
             if (categoryTotals[i] > 0) {
                 entries.add(new PieEntry((float) categoryTotals[i], CategoryUtils.getName(i)));
                 colors.add(CategoryUtils.getColor(i));
@@ -238,7 +255,7 @@ public class OverviewFragment extends Fragment {
         pieChart.setHoleRadius(55f);
         pieChart.setTransparentCircleRadius(60f);
         pieChart.setHoleColor(Color.WHITE);
-        pieChart.setCenterText(String.format("€ %.0f\ntotal spent", totalSpent));
+        pieChart.setCenterText(String.format("%s %.0f\ntotal spent", currentCurrency, totalSpent));
         pieChart.setCenterTextSize(13f);
         pieChart.setCenterTextColor(Color.parseColor("#1A1A1A"));
         pieChart.getDescription().setEnabled(false);
@@ -246,9 +263,21 @@ public class OverviewFragment extends Fragment {
         pieChart.setTouchEnabled(false);
         pieChart.invalidate();
 
-        // Populate legend container
         legendContainer.removeAllViews();
+        final int itemsPerRow = 3;
+        LinearLayout currentRow = null;
         for (int i = 0; i < entries.size(); i++) {
+            if (i % itemsPerRow == 0) {
+                currentRow = new LinearLayout(getContext());
+                currentRow.setOrientation(LinearLayout.HORIZONTAL);
+                LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+                if (i > 0) rowParams.topMargin = dpToPx(6);
+                currentRow.setLayoutParams(rowParams);
+                legendContainer.addView(currentRow);
+            }
+
             PieEntry entry = entries.get(i);
             int color = colors.get(i);
             double pct = totalSpent > 0 ? (entry.getValue() / totalSpent) * 100 : 0;
@@ -256,111 +285,124 @@ public class OverviewFragment extends Fragment {
             LinearLayout legendItem = new LinearLayout(getContext());
             legendItem.setOrientation(LinearLayout.HORIZONTAL);
             legendItem.setGravity(android.view.Gravity.CENTER_VERTICAL);
-
-            LinearLayout.LayoutParams itemParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-            );
-            itemParams.setMargins(0, 0, dpToPx(12), 0);
-            legendItem.setLayoutParams(itemParams);
+            legendItem.setLayoutParams(new LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
             View dot = new View(getContext());
-            LinearLayout.LayoutParams dotParams = new LinearLayout.LayoutParams(dpToPx(10), dpToPx(10));
+            LinearLayout.LayoutParams dotParams = new LinearLayout.LayoutParams(dpToPx(8), dpToPx(8));
             dotParams.setMargins(0, 0, dpToPx(4), 0);
             dot.setLayoutParams(dotParams);
             dot.setBackgroundColor(color);
 
             TextView label = new TextView(getContext());
             label.setText(String.format("%s %.0f%%", entry.getLabel(), pct));
-            label.setTextSize(11f);
+            label.setTextSize(10f);
             label.setTextColor(Color.parseColor("#444444"));
+            label.setMaxLines(1);
+            label.setEllipsize(android.text.TextUtils.TruncateAt.END);
 
             legendItem.addView(dot);
             legendItem.addView(label);
-            legendContainer.addView(legendItem);
+            currentRow.addView(legendItem);
+        }
+        int leftover = entries.size() % itemsPerRow;
+        if (leftover != 0 && currentRow != null) {
+            for (int i = 0; i < itemsPerRow - leftover; i++) {
+                View spacer = new View(getContext());
+                spacer.setLayoutParams(new LinearLayout.LayoutParams(
+                        0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+                currentRow.addView(spacer);
+            }
         }
     }
 
-    private void updateBudgetProgress(List<BudgetProgressItem> items) {
+    private void updateBudgetProgress(List<int[]> rows, double[] categoryTotals) {
         budgetProgressContainer.removeAllViews();
 
-        if (items.isEmpty()) {
+        if (rows.isEmpty()) {
             TextView empty = new TextView(getContext());
-            empty.setText("No budgets set. Add a budget to track spending.");
+            empty.setText("No budgets set for this period.");
             empty.setTextSize(13f);
             empty.setTextColor(Color.parseColor("#888888"));
             budgetProgressContainer.addView(empty);
             return;
         }
 
-        for (BudgetProgressItem item : items) {
-            // Category name + amount label
-            LinearLayout row = new LinearLayout(getContext());
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            row.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-            ));
+        for (int idx = 0; idx < rows.size(); idx++) {
+            int[] row = rows.get(idx);
+            int categoryId = row[0];
+            int limit      = row[1];
+            double spent   = categoryTotals[categoryId];
 
-            TextView nameView = new TextView(getContext());
-            nameView.setText(item.name);
-            nameView.setTextSize(13f);
-            nameView.setTextColor(Color.parseColor("#444444"));
-            LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(0,
-                    LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-            nameView.setLayoutParams(nameParams);
-
-            TextView amtView = new TextView(getContext());
-            amtView.setText(String.format("€ %.0f / € %d", item.spent, item.limit));
-            amtView.setTextSize(11f);
-            amtView.setTextColor(Color.parseColor("#888888"));
-
-            row.addView(nameView);
-            row.addView(amtView);
-            budgetProgressContainer.addView(row);
-
-            // ProgressBar
-            ProgressBar progressBar = new ProgressBar(getContext(), null,
-                    android.R.attr.progressBarStyleHorizontal);
-            LinearLayout.LayoutParams pbParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(8)
-            );
-            pbParams.setMargins(0, dpToPx(4), 0, dpToPx(12));
-            progressBar.setLayoutParams(pbParams);
-            progressBar.setMax(100);
-
-            int pct = item.limit > 0 ? (int) ((item.spent / item.limit) * 100) : 0;
-            if (pct > 100) pct = 100;
-            progressBar.setProgress(pct);
-
-            int progressColor;
-            if (pct >= 95) {
-                progressColor = Color.parseColor("#E53935"); // red
-            } else if (pct >= 80) {
-                progressColor = Color.parseColor("#FFA726"); // orange
-            } else {
-                progressColor = Color.parseColor("#4A7C7C"); // green/teal
-            }
-            progressBar.setProgressTintList(android.content.res.ColorStateList.valueOf(progressColor));
-
-            budgetProgressContainer.addView(progressBar);
+            addCategoryProgressRow(categoryId, limit, spent, idx > 0);
         }
+    }
+
+    private void addCategoryProgressRow(int categoryId, int limit, double spent, boolean addTopMargin) {
+        boolean exceeded = spent > limit;
+        int pct = limit > 0 ? (int) ((spent / limit) * 100) : 0;
+        int displayPct = Math.min(pct, 100);
+
+        LinearLayout block = new LinearLayout(getContext());
+        block.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams blockParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        if (addTopMargin) blockParams.topMargin = dpToPx(12);
+        block.setLayoutParams(blockParams);
+
+        LinearLayout labelRow = new LinearLayout(getContext());
+        labelRow.setOrientation(LinearLayout.HORIZONTAL);
+        labelRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        labelRow.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        TextView nameView = new TextView(getContext());
+        nameView.setText(CategoryUtils.getEmoji(categoryId) + "  " + CategoryUtils.getName(categoryId));
+        nameView.setTextSize(13f);
+        nameView.setTextColor(Color.parseColor("#1A1A1A"));
+        nameView.setLayoutParams(new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+
+        TextView amtView = new TextView(getContext());
+        amtView.setText(String.format("%s %.0f / %s %d", currentCurrency, spent, currentCurrency, limit));
+        amtView.setTextSize(11f);
+        amtView.setTextColor(exceeded ? Color.parseColor("#E53935") : Color.parseColor("#888888"));
+
+        labelRow.addView(nameView);
+        labelRow.addView(amtView);
+        block.addView(labelRow);
+
+        if (exceeded) {
+            TextView over = new TextView(getContext());
+            over.setText(String.format("Over budget by %s %.0f (%d%%)", currentCurrency, spent - limit, pct));
+            over.setTextSize(11f);
+            over.setTextColor(Color.parseColor("#E53935"));
+            LinearLayout.LayoutParams overParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            overParams.topMargin = dpToPx(2);
+            over.setLayoutParams(overParams);
+            block.addView(over);
+        }
+
+        ProgressBar progressBar = new ProgressBar(getContext(), null,
+                android.R.attr.progressBarStyleHorizontal);
+        LinearLayout.LayoutParams pbParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(10));
+        pbParams.setMargins(0, dpToPx(6), 0, 0);
+        progressBar.setLayoutParams(pbParams);
+        progressBar.setMax(100);
+        progressBar.setProgress(displayPct);
+
+        int progressColor = exceeded || pct >= 95 ? Color.parseColor("#E53935")
+                : pct >= 80 ? Color.parseColor("#FFA726")
+                : Color.parseColor("#4A7C7C");
+        progressBar.setProgressTintList(android.content.res.ColorStateList.valueOf(progressColor));
+
+        block.addView(progressBar);
+        budgetProgressContainer.addView(block);
     }
 
     private int dpToPx(int dp) {
-        float density = getResources().getDisplayMetrics().density;
-        return Math.round(dp * density);
-    }
-
-    private static class BudgetProgressItem {
-        String name;
-        double spent;
-        int limit;
-
-        BudgetProgressItem(String name, double spent, int limit) {
-            this.name = name;
-            this.spent = spent;
-            this.limit = limit;
-        }
+        return Math.round(dp * getResources().getDisplayMetrics().density);
     }
 }

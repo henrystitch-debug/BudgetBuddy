@@ -13,9 +13,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.github.budgetbuddy.MainActivity;
 import com.github.budgetbuddy.R;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.entity.Expense;
+import com.github.budgetbuddy.database.entity.Profile;
+import com.github.budgetbuddy.database.entity.Settings;
+import com.github.budgetbuddy.database.entity.Streak;
+
+import java.util.Calendar;
 
 public class AddExpenseFragment extends Fragment {
 
@@ -26,10 +32,11 @@ public class AddExpenseFragment extends Fragment {
 
     private LinearLayout catFood, catHome, catTransport, catSchool;
     private LinearLayout catHealth, catShopping, catFun, catOther;
+    private LinearLayout catCoffee, catTravel, catGift, catPet;
     private EditText etAmount, etNote;
 
     private static final int COLOR_SELECTED = Color.parseColor("#4A7C7C");
-    private static final int COLOR_DEFAULT = Color.parseColor("#F5F5F5");
+    private static final int COLOR_DEFAULT  = Color.parseColor("#F5F5F5");
 
     public static AddExpenseFragment newInstance(int expenseId) {
         AddExpenseFragment fragment = new AddExpenseFragment();
@@ -45,43 +52,46 @@ public class AddExpenseFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_expense, container, false);
 
-        // Read arguments
         if (getArguments() != null) {
             expenseId = getArguments().getInt(ARG_EXPENSE_ID, -1);
         }
 
-        // Bind views
-        etAmount = view.findViewById(R.id.et_amount);
-        etNote = view.findViewById(R.id.et_note);
+        etAmount     = view.findViewById(R.id.et_amount);
+        etNote       = view.findViewById(R.id.et_note);
 
-        catFood = view.findViewById(R.id.cat_food);
-        catHome = view.findViewById(R.id.cat_home);
+        catFood      = view.findViewById(R.id.cat_food);
+        catHome      = view.findViewById(R.id.cat_home);
         catTransport = view.findViewById(R.id.cat_transport);
-        catSchool = view.findViewById(R.id.cat_school);
-        catHealth = view.findViewById(R.id.cat_health);
-        catShopping = view.findViewById(R.id.cat_shopping);
-        catFun = view.findViewById(R.id.cat_fun);
-        catOther = view.findViewById(R.id.cat_other);
+        catSchool    = view.findViewById(R.id.cat_school);
+        catHealth    = view.findViewById(R.id.cat_health);
+        catShopping  = view.findViewById(R.id.cat_shopping);
+        catFun       = view.findViewById(R.id.cat_fun);
+        catOther     = view.findViewById(R.id.cat_other);
+        catCoffee    = view.findViewById(R.id.cat_coffee);
+        catTravel    = view.findViewById(R.id.cat_travel);
+        catGift      = view.findViewById(R.id.cat_gift);
+        catPet       = view.findViewById(R.id.cat_pet);
 
-        // Set category click listeners
-        catFood.setOnClickListener(v -> selectCategory(1));
-        catHome.setOnClickListener(v -> selectCategory(2));
+        catFood.setOnClickListener(v      -> selectCategory(1));
+        catHome.setOnClickListener(v      -> selectCategory(2));
         catTransport.setOnClickListener(v -> selectCategory(3));
-        catSchool.setOnClickListener(v -> selectCategory(4));
-        catHealth.setOnClickListener(v -> selectCategory(5));
-        catShopping.setOnClickListener(v -> selectCategory(6));
-        catFun.setOnClickListener(v -> selectCategory(7));
-        catOther.setOnClickListener(v -> selectCategory(8));
+        catSchool.setOnClickListener(v    -> selectCategory(4));
+        catHealth.setOnClickListener(v    -> selectCategory(5));
+        catShopping.setOnClickListener(v  -> selectCategory(6));
+        catFun.setOnClickListener(v       -> selectCategory(7));
+        catOther.setOnClickListener(v     -> selectCategory(8));
+        catCoffee.setOnClickListener(v    -> selectCategory(9));
+        catTravel.setOnClickListener(v    -> selectCategory(10));
+        catGift.setOnClickListener(v      -> selectCategory(11));
+        catPet.setOnClickListener(v       -> selectCategory(12));
 
-        // Cancel button
-        view.findViewById(R.id.btn_cancel).setOnClickListener(v ->
-                getParentFragmentManager().popBackStack()
-        );
-
-        // Save button
         view.findViewById(R.id.btn_save_expense).setOnClickListener(v -> saveExpense());
+        view.findViewById(R.id.btn_cancel_expense).setOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).navigateToOverview();
+            }
+        });
 
-        // Edit mode: load existing expense
         if (expenseId > 0) {
             loadExpenseForEdit();
         }
@@ -104,6 +114,10 @@ public class AddExpenseFragment extends Fragment {
         catShopping.setBackgroundColor(COLOR_DEFAULT);
         catFun.setBackgroundColor(COLOR_DEFAULT);
         catOther.setBackgroundColor(COLOR_DEFAULT);
+        catCoffee.setBackgroundColor(COLOR_DEFAULT);
+        catTravel.setBackgroundColor(COLOR_DEFAULT);
+        catGift.setBackgroundColor(COLOR_DEFAULT);
+        catPet.setBackgroundColor(COLOR_DEFAULT);
     }
 
     private LinearLayout getLayoutForCategory(int categoryId) {
@@ -116,6 +130,10 @@ public class AddExpenseFragment extends Fragment {
             case 6: return catShopping;
             case 7: return catFun;
             case 8: return catOther;
+            case 9: return catCoffee;
+            case 10: return catTravel;
+            case 11: return catGift;
+            case 12: return catPet;
             default: return catOther;
         }
     }
@@ -147,51 +165,114 @@ public class AddExpenseFragment extends Fragment {
 
         String note = etNote.getText().toString().trim();
         long now = System.currentTimeMillis();
-
         AppDatabase db = AppDatabase.getDatabase(requireContext());
 
         if (expenseId > 0) {
-            // Update existing expense
             int idToUpdate = expenseId;
             AppDatabase.databaseWriteExecutor.execute(() -> {
                 db.expenseDao().updateExpense(idToUpdate, amount, selectedCategoryId, now, note, "");
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
                     if (!isAdded()) return;
-                    getParentFragmentManager().popBackStack();
+                    if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).navigateToOverview();
+                    }
                 });
             });
         } else {
-            // Insert new expense
             AppDatabase.databaseWriteExecutor.execute(() -> {
+                Settings settings = db.settingsDao().getSettings();
+                int activeId = settings != null ? settings.activeProfileId : 0;
+                if (activeId <= 0) {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> Toast.makeText(getContext(),
+                            "No active user. Please complete setup first.", Toast.LENGTH_LONG).show());
+                    return;
+                }
+
                 Expense expense = new Expense();
-                expense.amount = amount;
+                expense.amount     = amount;
                 expense.categoryId = selectedCategoryId;
-                expense.entryDate = now;
-                expense.note = note;
-                expense.repeat = "";
+                expense.entryDate  = now;
+                expense.note       = note;
+                expense.repeat     = "";
+                expense.profileId  = activeId;
                 db.expenseDao().insert(expense);
+
+                updateStreakAfterLog(db, activeId, now);
+
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
                     if (!isAdded()) return;
-                    getParentFragmentManager().popBackStack();
+                    Toast.makeText(getContext(), "Expense saved!", Toast.LENGTH_SHORT).show();
+                    resetFormForNextEntry();
                 });
             });
         }
+    }
+
+    private void resetFormForNextEntry() {
+        etAmount.setText("");
+        etNote.setText("");
+        selectedCategoryId = -1;
+        resetAllCategories();
+        etAmount.requestFocus();
+    }
+
+    /** Increment day-streak if last log was yesterday; reset to 1 if older; no-op for same day. */
+    private static void updateStreakAfterLog(AppDatabase db, int profileId, long now) {
+        Streak streak = db.streakDao().getStreakForProfile(profileId);
+        if (streak == null) {
+            streak = new Streak();
+            streak.counter      = 1;
+            streak.last_updated = now;
+            streak.start_Date   = now;
+            streak.profileId    = profileId;
+            db.streakDao().insertNewStreak(streak);
+            return;
+        }
+
+        long lastUpdated = streak.last_updated;
+        int days = daysBetween(lastUpdated, now);
+        int newCount;
+        if (lastUpdated == 0 || days >= 2) {
+            newCount = 1;
+        } else if (days == 1) {
+            newCount = streak.counter + 1;
+        } else {
+            // same day; no change
+            return;
+        }
+        db.streakDao().updateStreakForProfile(profileId, newCount, now);
+    }
+
+    private static int daysBetween(long fromMillis, long toMillis) {
+        if (fromMillis <= 0) return Integer.MAX_VALUE;
+        Calendar a = Calendar.getInstance();
+        a.setTimeInMillis(fromMillis);
+        a.set(Calendar.HOUR_OF_DAY, 0);
+        a.set(Calendar.MINUTE, 0);
+        a.set(Calendar.SECOND, 0);
+        a.set(Calendar.MILLISECOND, 0);
+        Calendar b = Calendar.getInstance();
+        b.setTimeInMillis(toMillis);
+        b.set(Calendar.HOUR_OF_DAY, 0);
+        b.set(Calendar.MINUTE, 0);
+        b.set(Calendar.SECOND, 0);
+        b.set(Calendar.MILLISECOND, 0);
+        long diff = b.getTimeInMillis() - a.getTimeInMillis();
+        return (int) (diff / (24L * 60L * 60L * 1000L));
     }
 
     private void loadExpenseForEdit() {
         AppDatabase db = AppDatabase.getDatabase(requireContext());
         AppDatabase.databaseWriteExecutor.execute(() -> {
             Expense expense = db.expenseDao().getExpenseById(expenseId);
-            if (!isAdded()) return;
-            if (expense == null) return;
+            if (!isAdded() || expense == null) return;
             requireActivity().runOnUiThread(() -> {
                 if (!isAdded()) return;
                 etAmount.setText(String.valueOf(expense.amount));
-                if (expense.note != null) {
-                    etNote.setText(expense.note);
-                }
+                if (expense.note != null) etNote.setText(expense.note);
                 selectCategory(expense.categoryId);
             });
         });

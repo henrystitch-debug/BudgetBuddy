@@ -17,7 +17,7 @@ import com.github.budgetbuddy.R;
 import com.github.budgetbuddy.api.ClaudeApiHelper;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.entity.Budget;
-import com.github.budgetbuddy.database.entity.Category;
+import com.github.budgetbuddy.database.entity.Settings;
 import com.github.budgetbuddy.utils.CategoryUtils;
 import com.github.budgetbuddy.utils.TimeUtils;
 
@@ -25,16 +25,18 @@ public class CreateBudgetFragment extends Fragment {
 
     private int selectedCategoryId = -1;
     private int existingBudgetId = -1;
+    private int activeProfileId = 0;
     private String currentCurrency = "€";
 
     private View cardBudgetInfo, cardAiResult, cardInput, btnAiRecommend, btnSaveBudget, labelSetBudget;
     private TextView tvSelectedCategory, tvCurrentLimit, tvSpent, tvAiRecommendation;
     private EditText etBudgetAmount;
 
-    private final int[] categoryIds   = {1, 2, 3, 4, 5, 6, 7, 8};
+    private final int[] categoryIds   = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     private final int[] categoryViews = {
             R.id.cat_food, R.id.cat_home, R.id.cat_transport, R.id.cat_school,
-            R.id.cat_health, R.id.cat_shopping, R.id.cat_fun, R.id.cat_other
+            R.id.cat_health, R.id.cat_shopping, R.id.cat_fun, R.id.cat_other,
+            R.id.cat_coffee, R.id.cat_travel, R.id.cat_gift, R.id.cat_pet
     };
     private View[] categoryContainers;
 
@@ -61,7 +63,6 @@ public class CreateBudgetFragment extends Fragment {
         tvAiRecommendation = view.findViewById(R.id.tv_ai_recommendation);
         etBudgetAmount    = view.findViewById(R.id.et_budget_amount);
 
-        // Wire up category buttons
         categoryContainers = new View[categoryViews.length];
         for (int i = 0; i < categoryViews.length; i++) {
             categoryContainers[i] = view.findViewById(categoryViews[i]);
@@ -69,22 +70,19 @@ public class CreateBudgetFragment extends Fragment {
             categoryContainers[i].setOnClickListener(v -> onCategorySelected(catId));
         }
 
-        // Load current currency from settings
-        loadCurrency();
+        loadSettings();
 
-        // AI recommendation button
         btnAiRecommend.setOnClickListener(v -> getAiRecommendation());
-
-        // Save budget button
         btnSaveBudget.setOnClickListener(v -> saveBudget());
     }
 
-    private void loadCurrency() {
+    private void loadSettings() {
         AppDatabase.databaseWriteExecutor.execute(() -> {
             try {
-                var settings = AppDatabase.getDatabase(requireContext()).settingsDao().getSettings();
-                if (settings != null && settings.currency != null) {
-                    currentCurrency = settings.currency;
+                Settings settings = AppDatabase.getDatabase(requireContext()).settingsDao().getSettings();
+                if (settings != null) {
+                    if (settings.currency != null) currentCurrency = settings.currency;
+                    activeProfileId = settings.activeProfileId;
                 }
             } catch (Exception ignored) {}
         });
@@ -107,16 +105,21 @@ public class CreateBudgetFragment extends Fragment {
 
     private void loadBudgetForCategory(int categoryId) {
         AppDatabase db = AppDatabase.getDatabase(requireContext());
-        AppDatabase.databaseWriteExecutor.execute(() -> {
-            Category cat = db.categoryDao().getCategoryById(categoryId);
-            Budget budget = null;
-            if (cat != null && cat.budgetId > 0) {
-                budget = db.budgetDao().getBudgetById(cat.budgetId);
-            }
+        long start = TimeUtils.getStartOfMonth(0);
+        long end   = TimeUtils.getEndOfMonth(0);
 
-            long start = TimeUtils.getStartOfMonth(0);
-            long end   = TimeUtils.getEndOfMonth(0);
-            double spent = db.expenseDao().getTotalForCategoryAndInterval(categoryId, start, end);
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            // Always read the latest active profile in case it changed
+            Settings settings = db.settingsDao().getSettings();
+            int profileId = settings != null ? settings.activeProfileId : 0;
+            activeProfileId = profileId;
+
+            Budget budget = null;
+            double spent = 0;
+            if (profileId > 0) {
+                budget = db.budgetDao().getBudgetForProfileCategoryInterval(profileId, categoryId, start, end);
+                spent  = db.expenseDao().getTotalForProfileCategoryAndInterval(profileId, categoryId, start, end);
+            }
 
             final Budget finalBudget = budget;
             final double finalSpent  = spent;
@@ -125,7 +128,6 @@ public class CreateBudgetFragment extends Fragment {
             requireActivity().runOnUiThread(() -> {
                 existingBudgetId = finalBudget != null ? finalBudget.id : -1;
 
-                // Show all hidden sections
                 cardBudgetInfo.setVisibility(View.VISIBLE);
                 btnAiRecommend.setVisibility(View.VISIBLE);
                 labelSetBudget.setVisibility(View.VISIBLE);
@@ -154,7 +156,6 @@ public class CreateBudgetFragment extends Fragment {
 
         AppDatabase db = AppDatabase.getDatabase(requireContext());
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            // Gather spending data for past 3 months
             double m0 = db.expenseDao().getTotalForCategoryAndInterval(
                     selectedCategoryId, TimeUtils.getStartOfMonth(0), TimeUtils.getEndOfMonth(0));
             double m1 = db.expenseDao().getTotalForCategoryAndInterval(
@@ -166,25 +167,19 @@ public class CreateBudgetFragment extends Fragment {
 
             ClaudeApiHelper.getBudgetRecommendation(
                     BuildConfig.ANTHROPIC_API_KEY,
-                    catName,
-                    currentCurrency,
-                    m0, m1, avg,
+                    catName, currentCurrency, m0, m1, avg,
                     new ClaudeApiHelper.ApiCallback() {
-                        @Override
-                        public void onSuccess(String recommendation) {
+                        @Override public void onSuccess(String recommendation) {
                             if (!isAdded()) return;
                             requireActivity().runOnUiThread(() -> {
                                 tvAiRecommendation.setText(recommendation);
                                 cardAiResult.setVisibility(View.VISIBLE);
                             });
                         }
-
-                        @Override
-                        public void onError(String error) {
+                        @Override public void onError(String error) {
                             if (!isAdded()) return;
                             requireActivity().runOnUiThread(() ->
-                                    tvAiRecommendation.setText("⚠️ " + error)
-                            );
+                                    tvAiRecommendation.setText("⚠️ " + error));
                         }
                     }
             );
@@ -215,17 +210,29 @@ public class CreateBudgetFragment extends Fragment {
         long end   = TimeUtils.getEndOfMonth(0);
 
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            if (existingBudgetId > 0) {
-                db.budgetDao().updateBudget(existingBudgetId, amount, start, end);
+            Settings settings = db.settingsDao().getSettings();
+            int profileId = settings != null ? settings.activeProfileId : 0;
+            if (profileId <= 0) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> Toast.makeText(requireContext(),
+                        "No active user. Please complete setup first.", Toast.LENGTH_LONG).show());
+                return;
+            }
+
+            Budget existing = db.budgetDao().getBudgetForProfileCategoryInterval(
+                    profileId, selectedCategoryId, start, end);
+
+            if (existing != null) {
+                db.budgetDao().updateBudget(existing.id, amount, start, end);
             } else {
                 Budget newBudget = new Budget();
                 newBudget.limit          = amount;
                 newBudget.current_amount = 0;
                 newBudget.startDate      = start;
                 newBudget.endDate        = end;
-                long newId = db.budgetDao().insertBudgetGetId(newBudget);
-                db.categoryDao().updateBudgetId(selectedCategoryId, (int) newId);
-                existingBudgetId = (int) newId;
+                newBudget.profileId      = profileId;
+                newBudget.categoryId     = selectedCategoryId;
+                db.budgetDao().insertBudget(newBudget);
             }
 
             if (!isAdded()) return;

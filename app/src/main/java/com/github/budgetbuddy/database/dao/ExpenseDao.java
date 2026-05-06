@@ -36,6 +36,9 @@ public interface ExpenseDao {
     @Delete
     void deleteExpense(Expense expense);
 
+    @Query("DELETE FROM expense WHERE profileId = :profileId")
+    void deleteByProfileId(int profileId);
+
     @Query("SELECT COALESCE(SUM(amount), 0) FROM expense WHERE entryDate >= :startDate AND entryDate <= :endDate")
     double getTotalForInterval(long startDate, long endDate);
 
@@ -44,4 +47,13 @@ public interface ExpenseDao {
 
     @Query("SELECT * FROM expense WHERE entryDate >= :startDate AND entryDate <= :endDate ORDER BY entryDate DESC LIMIT :maxResults")
     List<Expense> getRecentExpenses(long startDate, long endDate, int maxResults);
+
+    @Query("SELECT * FROM expense WHERE profileId = :profileId AND entryDate >= :startDate AND entryDate <= :endDate ORDER BY entryDate DESC LIMIT :maxResults")
+    List<Expense> getRecentExpensesByProfile(int profileId, long startDate, long endDate, int maxResults);
+
+    @Query("SELECT * FROM expense WHERE profileId = :profileId AND entryDate >= :startDate AND entryDate <= :endDate")
+    List<Expense> getExpensesByProfileAndInterval(int profileId, long startDate, long endDate);
+
+    @Query("SELECT COALESCE(SUM(amount), 0) FROM expense WHERE profileId = :profileId AND categoryId = :categoryId AND entryDate >= :startDate AND entryDate <= :endDate")
+    double getTotalForProfileCategoryAndInterval(int profileId, int categoryId, long startDate, long endDate);
 }

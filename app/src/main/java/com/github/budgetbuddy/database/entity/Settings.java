@@ -10,4 +10,5 @@ public class Settings {
     public int id;
     public String currency;
     public boolean notifsEnabled;
+    public int activeProfileId;
 }

@@ -20,4 +20,7 @@ public interface SettingsDao {
 
     @Query("SELECT * FROM settings LIMIT 1")
     Settings getSettings();
+
+    @Query("UPDATE settings SET activeProfileId = :profileId WHERE id = :id")
+    void setActiveProfileId(int id, int profileId);
 }

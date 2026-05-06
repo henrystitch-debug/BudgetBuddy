@@ -6,47 +6,34 @@
     android:background="#FFFFFF">
 
     <!-- Header -->
-    <RelativeLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:text="Add Expense"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#1A1A1A"
+        android:padding="16dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add Expense"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#1A1A1A"
-            android:layout_centerVertical="true" />
-
-        <TextView
-            android:id="@+id/btn_cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cancel"
-            android:textColor="#888888"
-            android:textSize="15sp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:padding="8dp" />
-
-    </RelativeLayout>
-
-    <!-- Amount Section -->
+    <!-- Amount Section (yellow card) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="#FFFBEA"
-        android:padding="20dp">
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="28dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Amount"
             android:textColor="#888888"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
 
         <EditText
             android:id="@+id/et_amount"
@@ -54,12 +41,19 @@
             android:layout_height="wrap_content"
             android:hint="€ 0.00"
             android:inputType="numberDecimal"
-            android:textSize="28sp"
+            android:textSize="34sp"
+            android:textStyle="bold"
             android:textColor="#B8860B"
             android:textColorHint="#D4AC30"
             android:background="@android:color/transparent"
             android:padding="0dp"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="6dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#EEDD99"
+            android:layout_marginTop="14dp" />
 
         <EditText
             android:id="@+id/et_note"
@@ -70,7 +64,7 @@
             android:textSize="14sp"
             android:textColorHint="#AAAAAA"
             android:background="@android:color/transparent"
-            android:layout_marginTop="12dp" />
+            android:layout_marginTop="14dp" />
 
     </LinearLayout>
 
@@ -83,8 +77,8 @@
         android:textStyle="bold"
         android:textColor="#1A1A1A"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="12dp" />
+        android:layout_marginTop="28dp"
+        android:layout_marginBottom="14dp" />
 
     <!-- Category Grid Row 1 -->
     <LinearLayout
@@ -103,7 +97,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="8dp"
+            android:padding="12dp"
             android:background="#F5F5F5"
             android:layout_marginEnd="4dp">
 
@@ -131,7 +125,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="8dp"
+            android:padding="12dp"
             android:background="#F5F5F5"
             android:layout_marginEnd="4dp">
 
@@ -159,7 +153,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="8dp"
+            android:padding="12dp"
             android:background="#F5F5F5"
             android:layout_marginEnd="4dp">
 
@@ -187,7 +181,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="8dp"
+            android:padding="12dp"
             android:background="#F5F5F5">
 
             <TextView
@@ -225,7 +219,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="8dp"
+            android:padding="12dp"
             android:background="#F5F5F5"
             android:layout_marginEnd="4dp">
 
@@ -253,7 +247,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="8dp"
+            android:padding="12dp"
             android:background="#F5F5F5"
             android:layout_marginEnd="4dp">
 
@@ -281,7 +275,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="8dp"
+            android:padding="12dp"
             android:background="#F5F5F5"
             android:layout_marginEnd="4dp">
 
@@ -301,6 +295,128 @@
 
         </LinearLayout>
 
+        <!-- Coffee -->
+        <LinearLayout
+            android:id="@+id/cat_coffee"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="12dp"
+            android:background="#F5F5F5">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="☕"
+                android:textSize="24sp"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Coffee"
+                android:textSize="11sp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Category Grid Row 3 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="4dp">
+
+        <!-- Travel -->
+        <LinearLayout
+            android:id="@+id/cat_travel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="12dp"
+            android:background="#F5F5F5"
+            android:layout_marginEnd="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="✈️"
+                android:textSize="24sp"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Travel"
+                android:textSize="11sp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+        <!-- Gift -->
+        <LinearLayout
+            android:id="@+id/cat_gift"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="12dp"
+            android:background="#F5F5F5"
+            android:layout_marginEnd="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🎁"
+                android:textSize="24sp"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Gift"
+                android:textSize="11sp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+        <!-- Pet -->
+        <LinearLayout
+            android:id="@+id/cat_pet"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="12dp"
+            android:background="#F5F5F5"
+            android:layout_marginEnd="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🐾"
+                android:textSize="24sp"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pet"
+                android:textSize="11sp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
         <!-- Other -->
         <LinearLayout
             android:id="@+id/cat_other"
@@ -309,7 +425,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="8dp"
+            android:padding="12dp"
             android:background="#F5F5F5">
 
             <TextView
@@ -335,14 +451,31 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- Save Button -->
-    <Button
-        android:id="@+id/btn_save_expense"
+    <!-- Cancel + Save buttons -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="Save Expense"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#1A1A1A"
-        android:layout_margin="20dp" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="20dp">
+
+        <Button
+            android:id="@+id/btn_cancel_expense"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:text="Cancel"
+            android:textColor="#1A1A1A"
+            android:backgroundTint="#F0F0F0"
+            android:layout_marginEnd="10dp" />
+
+        <Button
+            android:id="@+id/btn_save_expense"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="2"
+            android:text="Save Expense"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#1A1A1A" />
+    </LinearLayout>
 
 </LinearLayout>
