@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.workmanager)
     implementation(libs.okhttp)
     implementation(libs.mpandroidchart)
+    implementation(libs.viewpager2)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

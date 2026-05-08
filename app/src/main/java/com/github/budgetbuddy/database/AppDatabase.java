@@ -11,28 +11,25 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.github.budgetbuddy.database.dao.BudgetDao;
 import com.github.budgetbuddy.database.dao.CategoryDao;
 import com.github.budgetbuddy.database.dao.ExpenseDao;
-import com.github.budgetbuddy.database.dao.SettingsDao;
 import com.github.budgetbuddy.database.dao.StreakDao;
 import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Expense;
 import com.github.budgetbuddy.database.entity.Budget;
 import com.github.budgetbuddy.database.entity.Streak;
-import com.github.budgetbuddy.database.entity.Settings;
 
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Expense.class, Category.class, Budget.class, Streak.class, Settings.class}, version = 1, exportSchema = false)
+@Database(entities = {Expense.class, Category.class, Budget.class, Streak.class}, version = 1, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ExpenseDao expenseDao();
     public abstract CategoryDao categoryDao();
     public abstract BudgetDao budgetDao();
     public abstract StreakDao streakDao();
-    public abstract SettingsDao settingsDao();
 
-    public static final ExecutorService databaseWriteExecutor = Executors.newFixedThreadPool(4);
+    public static final ExecutorService databaseWriteExecutor = Executors
+                                                .newFixedThreadPool(4);
 
     private static volatile AppDatabase INSTANCE;
 
@@ -43,7 +40,7 @@ public abstract class AppDatabase extends RoomDatabase {
                     INSTANCE = Room.databaseBuilder(
                             context.getApplicationContext(),
                             AppDatabase.class,
-                            "budget_buddy_database"
+                            DBConstants.DATABASE_NAME
                     ).addCallback(new RoomDatabase.Callback() {
                         @Override
                         public void onCreate(@NonNull SupportSQLiteDatabase db) {
@@ -51,32 +48,20 @@ public abstract class AppDatabase extends RoomDatabase {
                             databaseWriteExecutor.execute(() -> {
                                 AppDatabase database = INSTANCE;
 
-                                // Seed categories
                                 CategoryDao categoryDao = database.categoryDao();
-                                String[] names = {"Food", "Home", "Transport", "School",
-                                        "Health", "Shopping", "Fun", "Other", "Coffee",
-                                        "Travel", "Gift", "Pet"};
-                                for (String name : names) {
+                                for (String name : DBConstants.DEFAULT_CATEGORIES) {
                                     Category cat = new Category();
                                     cat.name = name;
                                     cat.budgetId = 0;
                                     categoryDao.insertCategory(cat);
                                 }
 
-                                // Seed streak
                                 StreakDao streakDao = database.streakDao();
                                 Streak streak = new Streak();
                                 streak.counter = 0;
                                 streak.last_updated = System.currentTimeMillis();
                                 streak.start_Date = System.currentTimeMillis();
                                 streakDao.insertNewStreak(streak);
-
-                                // Seed settings
-                                SettingsDao settingsDao = database.settingsDao();
-                                Settings settings = new Settings();
-                                settings.currency = "€";
-                                settings.notifsEnabled = false;
-                                settingsDao.insertSettings(settings);
                             });
                         }
                     }).build();

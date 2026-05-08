@@ -15,13 +15,14 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.github.budgetbuddy.BudgetBuddyApp;
 import com.github.budgetbuddy.MainActivity;
 import com.github.budgetbuddy.R;
+import com.github.budgetbuddy.SettingsManager;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.entity.Budget;
 import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Expense;
-import com.github.budgetbuddy.database.entity.Settings;
 import com.github.budgetbuddy.database.entity.Streak;
 import com.github.budgetbuddy.ui.onboarding.OnboardingActivity;
 import com.github.budgetbuddy.utils.CategoryUtils;
@@ -33,6 +34,7 @@ import com.github.mikephil.charting.data.PieEntry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class OverviewFragment extends Fragment {
 
@@ -97,11 +99,12 @@ public class OverviewFragment extends Fragment {
     }
 
     private void loadGreetingAndCurrency() {
-        String name = OnboardingActivity.getUserName(requireContext());
+        SettingsManager sm = ((BudgetBuddyApp) Objects.requireNonNull(getActivity())
+                .getApplication()).getSettingsManager();
+        String name = sm.getUserName();
         AppDatabase db = AppDatabase.getDatabase(requireContext());
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            Settings settings = db.settingsDao().getSettings();
-            String currency = settings != null && settings.currency != null ? settings.currency : "€";
+            String currency = sm.getCurrency();
             Streak streak = db.streakDao().getCurrentStreak();
             final int streakCount = streak != null ? streak.counter : 0;
 

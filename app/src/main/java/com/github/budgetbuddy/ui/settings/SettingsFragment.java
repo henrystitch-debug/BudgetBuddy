@@ -20,7 +20,6 @@ import androidx.fragment.app.Fragment;
 
 import com.github.budgetbuddy.R;
 import com.github.budgetbuddy.database.AppDatabase;
-import com.github.budgetbuddy.database.entity.Settings;
 import com.github.budgetbuddy.notification.NotificationHelper;
 import com.github.budgetbuddy.ui.onboarding.OnboardingActivity;
 import com.google.android.material.materialswitch.MaterialSwitch;
@@ -88,27 +87,28 @@ public class SettingsFragment extends Fragment {
     }
 
     private void loadSettings() {
-        String name = OnboardingActivity.getUserName(requireContext());
+        String name = "";
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            Settings settings = AppDatabase.getDatabase(requireContext()).settingsDao().getSettings();
-            if (!isAdded()) return;
-            requireActivity().runOnUiThread(() -> {
-                if (settings != null) {
-                    settingsId = settings.id;
-                    currentCurrency = settings.currency != null ? settings.currency : "€";
-                    notificationsEnabled = settings.notifsEnabled;
-                }
-                tvCurrentName.setText(name != null ? name : "Not set");
-                updateCurrencyLabel();
-                switchNotifications.setChecked(notificationsEnabled);
-            });
+            // TODO: fix this
+//            Settings settings = AppDatabase.getDatabase(requireContext()).settingsDao().getSettings();
+//            if (!isAdded()) return;
+//            requireActivity().runOnUiThread(() -> {
+//                if (settings != null) {
+//                    settingsId = settings.id;
+//                    currentCurrency = settings.currency != null ? settings.currency : "€";
+//                    notificationsEnabled = settings.notifsEnabled;
+//                }
+//                tvCurrentName.setText(name != null ? name : "Not set");
+//                updateCurrencyLabel();
+//                switchNotifications.setChecked(notificationsEnabled);
+//            });
         });
     }
 
     private void showChangeNameDialog() {
         EditText input = new EditText(requireContext());
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
-        String current = OnboardingActivity.getUserName(requireContext());
+        String current = ""; // TODO: OnboardingActivity.getUserName(requireContext());
         if (current != null) input.setText(current);
         int padding = (int) (16 * getResources().getDisplayMetrics().density);
         input.setPadding(padding, padding, padding, padding);
@@ -122,7 +122,7 @@ public class SettingsFragment extends Fragment {
                         Toast.makeText(requireContext(), "Name cannot be empty", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    OnboardingActivity.setUserName(requireContext(), newName);
+//                    OnboardingActivity.setUserName(requireContext(), newName);
                     tvCurrentName.setText(newName);
                     Toast.makeText(requireContext(), "Name updated", Toast.LENGTH_SHORT).show();
                 })
@@ -167,11 +167,11 @@ public class SettingsFragment extends Fragment {
 
     private void saveSettings(String currency, boolean notifs) {
         int id = settingsId;
-        AppDatabase.databaseWriteExecutor.execute(() ->
-                AppDatabase.getDatabase(requireContext())
-                        .settingsDao()
-                        .updateSettings(currency, notifs, id)
-        );
+//        AppDatabase.databaseWriteExecutor.execute(() ->
+//                AppDatabase.getDatabase(requireContext())
+//                        .settingsDao()
+//                        .updateSettings(currency, notifs, id)
+//        );
     }
 
     private void updateCurrencyLabel() {

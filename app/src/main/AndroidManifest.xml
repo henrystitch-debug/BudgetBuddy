@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
+        android:name=".BudgetBuddyApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -24,6 +25,9 @@
         <activity
             android:name=".ui.onboarding.OnboardingActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.onboarding.OnboardingActivityTrial"
+            android:exported="true" />
     </application>
 
 </manifest>

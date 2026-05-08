@@ -12,15 +12,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.github.budgetbuddy.BudgetBuddyApp;
 import com.github.budgetbuddy.BuildConfig;
 import com.github.budgetbuddy.R;
+import com.github.budgetbuddy.SettingsManager;
 import com.github.budgetbuddy.api.ClaudeApiHelper;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.entity.Budget;
 import com.github.budgetbuddy.database.entity.Category;
-import com.github.budgetbuddy.database.entity.Settings;
 import com.github.budgetbuddy.utils.CategoryUtils;
 import com.github.budgetbuddy.utils.TimeUtils;
+
+import java.util.Objects;
 
 public class CreateBudgetFragment extends Fragment {
 
@@ -78,12 +81,9 @@ public class CreateBudgetFragment extends Fragment {
 
     private void loadCurrency() {
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            try {
-                Settings settings = AppDatabase.getDatabase(requireContext()).settingsDao().getSettings();
-                if (settings != null && settings.currency != null) {
-                    currentCurrency = settings.currency;
-                }
-            } catch (Exception ignored) {}
+                SettingsManager sm = ((BudgetBuddyApp) Objects.requireNonNull(getActivity())
+                        .getApplication()).getSettingsManager();
+                currentCurrency = sm.getCurrency();
         });
     }
 

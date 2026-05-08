@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">BudgetBuddy</string>
+    <string name="cancel">Cancel</string>
+    <string name="add">Add</string>
+    <string name="add_cat">Add Category</string>
+    <string name="contd">Continue</string>
+    <string name="letsgo">let\'s go!</string>
+    <string name="cat_name">Category Name</string>
+    <string name="dollar_symbol">$</string>
+    <string name="br_symbol">£</string>
+    <string name="eur_symbol">€</string>
+    <string name="yen_symbol">¥</string>
+    <string name="empty_cat_prompt">Pick at least one category</string>
 </resources>

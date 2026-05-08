@@ -11,6 +11,7 @@ public class Expense {
     public double amount;
     public int categoryId;
     public long entryDate;
+
     public String note;
     public String repeat;
 }
