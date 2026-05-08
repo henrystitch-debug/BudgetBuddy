@@ -62,7 +62,7 @@ dependencies {
     implementation(libs.recyclerview)
     implementation(libs.workmanager)
     implementation(libs.okhttp)
-    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation(libs.mpandroidchart)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

@@ -170,7 +170,7 @@ public class SettingsFragment extends Fragment {
         AppDatabase.databaseWriteExecutor.execute(() ->
                 AppDatabase.getDatabase(requireContext())
                         .settingsDao()
-                        .updateStreak(currency, notifs, id)
+                        .updateSettings(currency, notifs, id)
         );
     }
 

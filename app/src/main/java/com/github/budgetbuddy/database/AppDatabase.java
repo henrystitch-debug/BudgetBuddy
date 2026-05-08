@@ -46,44 +46,37 @@ public abstract class AppDatabase extends RoomDatabase {
                             "budget_buddy_database"
                     ).addCallback(new RoomDatabase.Callback() {
                         @Override
-                        public void onOpen(@NonNull SupportSQLiteDatabase db) {
-                            super.onOpen(db);
+                        public void onCreate(@NonNull SupportSQLiteDatabase db) {
+                            super.onCreate(db);
                             databaseWriteExecutor.execute(() -> {
                                 AppDatabase database = INSTANCE;
 
-                                // Seed categories if table is empty
+                                // Seed categories
                                 CategoryDao categoryDao = database.categoryDao();
-                                List<Category> existingCategories = categoryDao.getAllCategories();
-                                if (existingCategories == null || existingCategories.isEmpty()) {
-                                    String[] names = {"Food", "Home", "Transport", "School", "Health", "Shopping", "Fun", "Other", "Coffee", "Travel", "Gift", "Pet"};
-                                    for (int i = 0; i < names.length; i++) {
-                                        Category cat = new Category();
-                                        cat.name = names[i];
-                                        cat.budgetId = 0;
-                                        categoryDao.insertCategory(cat);
-                                    }
+                                String[] names = {"Food", "Home", "Transport", "School",
+                                        "Health", "Shopping", "Fun", "Other", "Coffee",
+                                        "Travel", "Gift", "Pet"};
+                                for (String name : names) {
+                                    Category cat = new Category();
+                                    cat.name = name;
+                                    cat.budgetId = 0;
+                                    categoryDao.insertCategory(cat);
                                 }
 
-                                // Seed streak row if empty
+                                // Seed streak
                                 StreakDao streakDao = database.streakDao();
-                                Streak existingStreak = streakDao.getCurrentStreak();
-                                if (existingStreak == null) {
-                                    Streak streak = new Streak();
-                                    streak.counter = 0;
-                                    streak.last_updated = System.currentTimeMillis();
-                                    streak.start_Date = System.currentTimeMillis();
-                                    streakDao.insertNewStreak(streak);
-                                }
+                                Streak streak = new Streak();
+                                streak.counter = 0;
+                                streak.last_updated = System.currentTimeMillis();
+                                streak.start_Date = System.currentTimeMillis();
+                                streakDao.insertNewStreak(streak);
 
-                                // Seed settings row if empty
+                                // Seed settings
                                 SettingsDao settingsDao = database.settingsDao();
-                                Settings existingSettings = settingsDao.getSettings();
-                                if (existingSettings == null) {
-                                    Settings settings = new Settings();
-                                    settings.currency = "€";
-                                    settings.notifsEnabled = false;
-                                    settingsDao.insertSettings(settings);
-                                }
+                                Settings settings = new Settings();
+                                settings.currency = "€";
+                                settings.notifsEnabled = false;
+                                settingsDao.insertSettings(settings);
                             });
                         }
                     }).build();
