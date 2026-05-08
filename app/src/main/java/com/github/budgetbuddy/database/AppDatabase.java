@@ -43,18 +43,18 @@ import com.github.budgetbuddy.database.entity.Settings;
                                 super.onCreate(db);
                                 // Runs ONCE when the database is first created
                                 // Insert your default categories here with raw SQL
-                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Food', '🍔', 0)");
-                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Transport', '🚗', 0)");
-                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Shopping', '🛍️', 0)");
-                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Health', '💊', 0)");
-                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Entertainment', '🎬', 0)");
-                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Housing', '🏠', 0)");
-                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Travel', '✈️', 0)");
-                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Education', '📚', 0)");
-                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Sports', '⚽', 0)");
-                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Utilities', '💡', 0)");
-                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Pets', '🐾', 0)");
-                                db.execSQL("INSERT INTO category (name, icon, budgetId) VALUES ('Gifts', '🎁', 0)");
+                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Food', '🍔')");
+                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Transport', '🚗')");
+                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Shopping', '🛍️')");
+                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Health', '💊')");
+                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Entertainment', '🎬')");
+                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Housing', '🏠')");
+                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Travel', '✈️')");
+                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Education', '📚')");
+                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Sports', '⚽')");
+                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Utilities', '💡')");
+                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Pets', '🐾')");
+                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Gifts', '🎁')");
                             }
                         }).fallbackToDestructiveMigration(true)
                                 .build();
