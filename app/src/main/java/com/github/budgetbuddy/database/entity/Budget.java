@@ -9,6 +9,7 @@ public class Budget {
     public int id;
     public double limit;
     public double current_amount;
+    public int categoryId;
     public long startDate;
     public long endDate;
 }

@@ -16,6 +16,7 @@ import com.github.budgetbuddy.database.entity.Expense;
 public class MainActivity extends AppCompatActivity {
 
     AppDatabase db;
+    //public static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
