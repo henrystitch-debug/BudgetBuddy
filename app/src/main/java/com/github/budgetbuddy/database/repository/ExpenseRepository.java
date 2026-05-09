@@ -1,8 +1,12 @@
 package com.github.budgetbuddy.database.repository;
 
+import android.app.Application;
+
+import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.dao.ExpenseDao;
 import com.github.budgetbuddy.database.entity.Expense;
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.Calendar;
 import java.util.List;
 
@@ -14,18 +18,20 @@ import java.util.List;
  */
 public class ExpenseRepository {
     private final ExpenseDao expenseDao;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    public ExpenseRepository(ExpenseDao expenseDao) {
-        this.expenseDao = expenseDao;
+    public ExpenseRepository(Application application) {
+        AppDatabase db = AppDatabase.getInstance(application);
+        expenseDao = db.expenseDao();
     }
 
     /**
      * Inserts a new expense. {@code expense.entryDate} is normalized to start-of-day millis
      * (midnight, local time) before persisting. This modifies the passed object in place.
      */
-    public void addExpense(Expense expense) {
+    public void insert(Expense expense) {
         expense.entryDate = toStartOfDay(expense.entryDate);
-        expenseDao.insert(expense);
+        executor.execute(()->expenseDao.insert(expense));
     }
 
     /**
