@@ -14,6 +14,7 @@ import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
+import com.github.budgetbuddy.SettingsManager;
 
 import java.util.concurrent.TimeUnit;
 
@@ -62,7 +63,7 @@ public class NotificationHelper {
 
     private static String lookupActiveUserName(Context context) {
         try {
-            return ""; // TODO: OnboardingActivity.getUserName(context);
+            return new SettingsManager(context).getUserName();
         } catch (Exception e) {
             return null;
         }

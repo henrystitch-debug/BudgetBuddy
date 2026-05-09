@@ -81,7 +81,7 @@ public class CreateBudgetFragment extends Fragment {
 
     private void loadCurrency() {
         AppDatabase.databaseWriteExecutor.execute(() -> {
-                SettingsManager sm = ((BudgetBuddyApp) Objects.requireNonNull(getActivity())
+                SettingsManager sm = ((BudgetBuddyApp) requireActivity()
                         .getApplication()).getSettingsManager();
                 currentCurrency = sm.getCurrency();
         });
