@@ -4,6 +4,7 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import com.github.budgetbuddy.database.entity.Budget;
 
@@ -15,6 +16,14 @@ public interface BudgetDao {
     @Insert
     void insertBudget(Budget budget);
 
+    @Update
+    void updateBudget(Budget budget);
+
+    @Query("SELECT * FROM budget WHERE startDate <= :date AND endDate >= :date ORDER BY startDate DESC, id DESC LIMIT 1")
+    Budget getActiveBudget(long date);
+
+    @Query("SELECT * FROM budget WHERE startDate >= :start AND endDate <= :end")
+    List<Budget> getBudgetsInInterval(long start, long end);
     @Insert
     long insertBudgetGetId(Budget budget);
 
@@ -26,6 +35,9 @@ public interface BudgetDao {
 
     @Query("SELECT * FROM budget WHERE id = :id")
     Budget getBudgetById(int id);
+
+    @Query("UPDATE budget SET current_amount = current_amount + :amount WHERE id = :id")
+    void incrementCurrentAmount(int id, double amount);
 
     @Delete
     void deleteBudget(Budget budget);

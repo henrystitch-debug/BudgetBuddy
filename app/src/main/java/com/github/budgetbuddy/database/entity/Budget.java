@@ -7,8 +7,8 @@ import androidx.room.PrimaryKey;
 public class Budget {
     @PrimaryKey(autoGenerate = true)
     public int id;
-    public int limit;
-    public int current_amount;
+    public double limit;
+    public double current_amount;
     public long startDate;
     public long endDate;
 }
