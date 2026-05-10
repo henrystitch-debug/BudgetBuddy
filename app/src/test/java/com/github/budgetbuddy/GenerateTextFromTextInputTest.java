@@ -2,12 +2,21 @@ package com.github.budgetbuddy;
 
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
+import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 public class GenerateTextFromTextInputTest {
     @Test
     public void generateText() {
-        // The client gets the API key from the environment variable `GEMINI_API_KEY`.
+        String googleApiKey = System.getenv("GOOGLE_API_KEY");
+        String runIntegration = System.getenv("RUN_GEMINI_INTEGRATION_TEST");
+        Assume.assumeTrue(
+                "Set GOOGLE_API_KEY and RUN_GEMINI_INTEGRATION_TEST=true to run this integration test.",
+                googleApiKey != null && !googleApiKey.isBlank() && "true".equalsIgnoreCase(runIntegration)
+        );
+
+        // The client gets the API key from the environment.
         Client client = new Client();
 
         GenerateContentResponse response =
@@ -16,6 +25,8 @@ public class GenerateTextFromTextInputTest {
                         "How do I track my expense and save more?",
                         null);
 
-        System.out.println(response.text());
+        Assert.assertNotNull("Response must not be null", response);
+        Assert.assertNotNull("Response text must not be null", response.text());
+        Assert.assertFalse("Response text must not be blank", response.text().isBlank());
     }
 }
