@@ -9,15 +9,11 @@ import org.junit.Test;
 public class GenerateTextFromTextInputTest {
     @Test
     public void generateText() {
-        String googleApiKey = System.getenv("GOOGLE_API_KEY");
         String geminiApiKey = System.getenv("GEMINI_API_KEY");
-        String effectiveApiKey = (googleApiKey != null && !googleApiKey.isBlank())
-                ? googleApiKey
-                : geminiApiKey;
         String runIntegration = System.getenv("RUN_GEMINI_INTEGRATION_TEST");
         Assume.assumeTrue(
-                "Set GOOGLE_API_KEY (or GEMINI_API_KEY) and RUN_GEMINI_INTEGRATION_TEST=true to run this integration test.",
-                effectiveApiKey != null && !effectiveApiKey.isBlank() && "true".equalsIgnoreCase(runIntegration)
+                "Set GEMINI_API_KEY and RUN_GEMINI_INTEGRATION_TEST=true to run this integration test.",
+                geminiApiKey != null && !geminiApiKey.isBlank() && "true".equalsIgnoreCase(runIntegration)
         );
 
         // The client gets the API key from the environment.
