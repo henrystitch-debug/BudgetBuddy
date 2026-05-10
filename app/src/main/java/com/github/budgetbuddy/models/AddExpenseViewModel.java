@@ -1,14 +1,16 @@
-package com.github.budgetbuddy;
+package com.github.budgetbuddy.models;
 
 import android.app.Application;
 
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
+import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Expense;
 import com.github.budgetbuddy.database.repository.CategoryRepository;
 import com.github.budgetbuddy.database.repository.ExpenseRepository;
+import com.github.budgetbuddy.utils.TimeUtils;
 
 import java.util.List;
 
@@ -18,8 +20,9 @@ public class AddExpenseViewModel extends AndroidViewModel {
 
     public AddExpenseViewModel(Application application) {
         super(application);
-        categoryRepository = new CategoryRepository(application);
-        expenseRepository = new ExpenseRepository(application);
+        AppDatabase db = AppDatabase.getDatabase(application);
+        categoryRepository = new CategoryRepository(db.categoryDao());
+        expenseRepository = new ExpenseRepository(db.expenseDao());
     }
 
     // Returns all categories to populate the grid
@@ -27,13 +30,12 @@ public class AddExpenseViewModel extends AndroidViewModel {
         return categoryRepository.getAllCategories();
     }
 
-    // Saves the expense on a background thread (DB work must not run on the main thread)
-    public void saveExpense(double amount, int categoryId, String note) {
+    public void saveExpense(long amountInCents, int categoryId, String note) {
             Expense expense = new Expense();
-            expense.amount = amount;
+            expense.amountInCents = amountInCents;
             expense.categoryId = categoryId;
             expense.note = note;
-            expense.entryDate = System.currentTimeMillis();
+            expense.entryDateStartInMilliSec = TimeUtils.toStartOfDay(System.currentTimeMillis());
             expenseRepository.insert(expense);
     }
 }

@@ -1,5 +1,6 @@
 package com.github.budgetbuddy.ui.expense;
 
+import android.app.Application;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,8 +17,11 @@ import androidx.fragment.app.Fragment;
 import com.github.budgetbuddy.MainActivity;
 import com.github.budgetbuddy.R;
 import com.github.budgetbuddy.database.AppDatabase;
+import com.github.budgetbuddy.database.DBConstants;
 import com.github.budgetbuddy.database.entity.Expense;
 import com.github.budgetbuddy.database.entity.Streak;
+import com.github.budgetbuddy.database.repository.ExpenseRepository;
+import com.github.budgetbuddy.utils.MoneyUtils;
 
 import java.util.Calendar;
 
@@ -32,6 +36,8 @@ public class AddExpenseFragment extends Fragment {
     private LinearLayout catHealth, catShopping, catFun, catOther;
     private LinearLayout catCoffee, catTravel, catGift, catPet;
     private EditText etAmount, etNote;
+
+    private ExpenseRepository expenseRepository;
 
     private static final int COLOR_SELECTED = Color.parseColor("#4A7C7C");
     private static final int COLOR_DEFAULT  = Color.parseColor("#F5F5F5");
@@ -49,6 +55,10 @@ public class AddExpenseFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_expense, container, false);
+
+        // Initialize repository with Application context
+        AppDatabase db = AppDatabase.getDatabase(requireContext());
+        expenseRepository = new ExpenseRepository(db.expenseDao());
 
         if (getArguments() != null) {
             expenseId = getArguments().getInt(ARG_EXPENSE_ID, -1);
@@ -120,15 +130,15 @@ public class AddExpenseFragment extends Fragment {
 
     private LinearLayout getLayoutForCategory(int categoryId) {
         switch (categoryId) {
-            case 1: return catFood;
-            case 2: return catHome;
-            case 3: return catTransport;
-            case 4: return catSchool;
-            case 5: return catHealth;
-            case 6: return catShopping;
-            case 7: return catFun;
-            case 8: return catOther;
-            case 9: return catCoffee;
+            case 1:  return catFood;
+            case 2:  return catHome;
+            case 3:  return catTransport;
+            case 4:  return catSchool;
+            case 5:  return catHealth;
+            case 6:  return catShopping;
+            case 7:  return catFun;
+            case 8:  return catOther;
+            case 9:  return catCoffee;
             case 10: return catTravel;
             case 11: return catGift;
             case 12: return catPet;
@@ -138,37 +148,37 @@ public class AddExpenseFragment extends Fragment {
 
     private void saveExpense() {
         String amountStr = etAmount.getText().toString().trim();
+
+        // Validate: empty
         if (amountStr.isEmpty()) {
-            Toast.makeText(getContext(), "Please enter an amount", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.invalid_amount_prompt, Toast.LENGTH_SHORT).show();
             return;
         }
-
-        double amount;
-        try {
-            amount = Double.parseDouble(amountStr);
-        } catch (NumberFormatException e) {
-            Toast.makeText(getContext(), "Please enter a valid amount", Toast.LENGTH_SHORT).show();
+        // Validate: format
+        if (!MoneyUtils.isValidMoneyInput(amountStr)) {
+            Toast.makeText(getContext(), R.string.invalid_amount_prompt, Toast.LENGTH_SHORT).show();
             return;
         }
-
-        if (amount <= 0) {
-            Toast.makeText(getContext(), "Amount must be greater than 0", Toast.LENGTH_SHORT).show();
+        long amountInCents = MoneyUtils.toCents(amountStr);
+        if (amountInCents <= 0) {
+            Toast.makeText(getContext(), R.string.nonpos_amount_prompt,
+                    Toast.LENGTH_SHORT).show();
             return;
         }
-
-        if (selectedCategoryId == -1) {
-            Toast.makeText(getContext(), "Please select a category", Toast.LENGTH_SHORT).show();
+        if (selectedCategoryId == DBConstants.INVALID) {
+            Toast.makeText(getContext(), R.string.empty_cat_prompt,
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
         String note = etNote.getText().toString().trim();
         long now = System.currentTimeMillis();
-        AppDatabase db = AppDatabase.getDatabase(requireContext());
 
         if (expenseId > 0) {
             int idToUpdate = expenseId;
             AppDatabase.databaseWriteExecutor.execute(() -> {
-                db.expenseDao().updateExpense(idToUpdate, amount, selectedCategoryId, now, note, "");
+                expenseRepository.updateExpense(idToUpdate, amountInCents, selectedCategoryId, now,
+                        note, "");
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
                     if (!isAdded()) return;
@@ -178,21 +188,22 @@ public class AddExpenseFragment extends Fragment {
                 });
             });
         } else {
+            // INSERT — use repository, pass cents as long
             AppDatabase.databaseWriteExecutor.execute(() -> {
                 Expense expense = new Expense();
-                expense.amount     = amount;
-                expense.categoryId = selectedCategoryId;
-                expense.entryDate  = now;
-                expense.note       = note;
-                expense.repeat     = "";
-                db.expenseDao().insert(expense);
+                expense.amountInCents             = amountInCents;
+                expense.categoryId                = selectedCategoryId;
+                expense.entryDateStartInMilliSec  = now;
+                expense.note                      = note;
+                expense.repeat                    = "";
+                expenseRepository.insert(expense);
 
-                updateStreakAfterLog(db, now);
+                updateStreakAfterLog(AppDatabase.getDatabase(requireContext()), now);
 
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
                     if (!isAdded()) return;
-                    Toast.makeText(getContext(), "Expense saved!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), R.string.exp_saved, Toast.LENGTH_SHORT).show();
                     resetFormForNextEntry();
                 });
             });
@@ -202,7 +213,7 @@ public class AddExpenseFragment extends Fragment {
     private void resetFormForNextEntry() {
         etAmount.setText("");
         etNote.setText("");
-        selectedCategoryId = -1;
+        selectedCategoryId = DBConstants.INVALID;
         resetAllCategories();
         etAmount.requestFocus();
     }
@@ -218,26 +229,23 @@ public class AddExpenseFragment extends Fragment {
         long lastUpdated = streak.last_updated;
         int days = daysBetween(lastUpdated, now);
         if (lastUpdated == 0) {
-            int existingOrMinimumCount = Math.max(1, streak.counter);
+            int existingOrMinimumCount = Math.max(DBConstants.MIN_STREAK, streak.counter);
             db.streakDao().updateStreakById(existingOrMinimumCount, now, streak.id);
             return;
         }
 
         if (days >= 2) {
             createStreakRecord(db, now);
-            return;
         } else if (days == 1) {
-            int newCount = streak.counter + 1;
-            db.streakDao().updateStreakById(newCount, now, streak.id);
-        } else {
-            return; // same day, no-op
+            db.streakDao().updateStreakById(streak.counter + 1, now, streak.id);
         }
+        // days == 0: same day, no-op
     }
 
     private static void createStreakRecord(AppDatabase db, long now) {
         Streak newStreak = new Streak();
-        newStreak.counter = 1;
-        newStreak.start_Date = now;
+        newStreak.counter      = DBConstants.MIN_STREAK;
+        newStreak.start_Date   = now;
         newStreak.last_updated = now;
         db.streakDao().insertNewStreak(newStreak);
     }
@@ -246,28 +254,24 @@ public class AddExpenseFragment extends Fragment {
         if (fromMillis <= 0) return Integer.MAX_VALUE;
         Calendar a = Calendar.getInstance();
         a.setTimeInMillis(fromMillis);
-        a.set(Calendar.HOUR_OF_DAY, 0);
-        a.set(Calendar.MINUTE, 0);
-        a.set(Calendar.SECOND, 0);
-        a.set(Calendar.MILLISECOND, 0);
+        a.set(Calendar.HOUR_OF_DAY, 0); a.set(Calendar.MINUTE, 0);
+        a.set(Calendar.SECOND, 0);      a.set(Calendar.MILLISECOND, 0);
         Calendar b = Calendar.getInstance();
         b.setTimeInMillis(toMillis);
-        b.set(Calendar.HOUR_OF_DAY, 0);
-        b.set(Calendar.MINUTE, 0);
-        b.set(Calendar.SECOND, 0);
-        b.set(Calendar.MILLISECOND, 0);
+        b.set(Calendar.HOUR_OF_DAY, 0); b.set(Calendar.MINUTE, 0);
+        b.set(Calendar.SECOND, 0);      b.set(Calendar.MILLISECOND, 0);
         long diff = b.getTimeInMillis() - a.getTimeInMillis();
         return (int) (diff / (24L * 60L * 60L * 1000L));
     }
 
     private void loadExpenseForEdit() {
-        AppDatabase db = AppDatabase.getDatabase(requireContext());
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            Expense expense = db.expenseDao().getExpenseById(expenseId);
+            Expense expense = expenseRepository.getExpenseById(expenseId);
             if (!isAdded() || expense == null) return;
             requireActivity().runOnUiThread(() -> {
                 if (!isAdded()) return;
-                etAmount.setText(String.valueOf(expense.amount));
+                // Use MoneyUtils to format cents back to display string
+                etAmount.setText(MoneyUtils.fromCentsRaw(expense.amountInCents));
                 if (expense.note != null) etNote.setText(expense.note);
                 selectCategory(expense.categoryId);
             });

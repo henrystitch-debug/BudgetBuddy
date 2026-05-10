@@ -4,6 +4,7 @@ import com.github.budgetbuddy.database.dao.BudgetDao;
 import com.github.budgetbuddy.database.dao.ExpenseDao;
 import com.github.budgetbuddy.database.entity.Budget;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -22,7 +23,7 @@ public class AnalyticsRepository {
      * Gets the total amount spent within a specific time interval.
      */
     public double getTotalSpending(long startDate, long endDate) {
-        Double total = expenseDao.getTotalSpending(startDate, endDate);
+        Long total = expenseDao.getTotalSpending(startDate, endDate);
         return total != null ? total : 0.0;
     }
 
@@ -51,7 +52,7 @@ public class AnalyticsRepository {
 
         double totalLimit = 0;
         for (Budget budget : budgets) {
-            totalLimit += budget.limit;
+            totalLimit += budget.limitInCents;
         }
 
         if (totalLimit == 0) return 0.0;
@@ -64,6 +65,7 @@ public class AnalyticsRepository {
      * Gets the highest spending category ID for the given period.
      */
     public int getTopSpendingCategory(long startDate, long endDate) {
+        // NOTE: instead of doing this in memory, delegate to the DB using `Order by LIMIT 1`
         List<ExpenseDao.CategorySpending> spending = getSpendingByCategory(startDate, endDate);
         if (spending.isEmpty()) return -1;
 
@@ -71,8 +73,8 @@ public class AnalyticsRepository {
         double maxAmount = -1;
 
         for (ExpenseDao.CategorySpending item : spending) {
-            if (item.total > maxAmount) {
-                maxAmount = item.total;
+            if (item.totalInCents > maxAmount) {
+                maxAmount = item.totalInCents;
                 topCategoryId = item.categoryId;
             }
         }

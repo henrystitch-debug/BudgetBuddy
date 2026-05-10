@@ -11,29 +11,22 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.github.budgetbuddy.BudgetBuddyApp;
-import com.github.budgetbuddy.BuildConfig;
 import com.github.budgetbuddy.R;
-import com.github.budgetbuddy.SettingsManager;
-import com.github.budgetbuddy.api.ClaudeApiHelper;
-import com.github.budgetbuddy.database.AppDatabase;
-import com.github.budgetbuddy.database.entity.Budget;
-import com.github.budgetbuddy.database.entity.Category;
+import com.github.budgetbuddy.models.CreateBudgetViewModel;
 import com.github.budgetbuddy.utils.CategoryUtils;
-import com.github.budgetbuddy.utils.TimeUtils;
-
-import java.util.Objects;
+import com.github.budgetbuddy.utils.MoneyUtils;
 
 public class CreateBudgetFragment extends Fragment {
 
     private int selectedCategoryId = -1;
-    private int existingBudgetId = -1;
-    private String currentCurrency = "€";
 
-    private View cardBudgetInfo, cardAiResult, cardInput, btnAiRecommend, btnSaveBudget, labelSetBudget;
+    private View     cardBudgetInfo, cardAiResult, cardInput, btnAiRecommend, btnSaveBudget, labelSetBudget;
     private TextView tvSelectedCategory, tvCurrentLimit, tvSpent, tvAiRecommendation;
     private EditText etBudgetAmount;
+
+    private CreateBudgetViewModel viewModel;
 
     private final int[] categoryIds   = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     private final int[] categoryViews = {
@@ -54,44 +47,91 @@ public class CreateBudgetFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        cardBudgetInfo    = view.findViewById(R.id.card_budget_info);
-        cardAiResult      = view.findViewById(R.id.card_ai_result);
-        cardInput         = view.findViewById(R.id.card_input);
-        btnAiRecommend    = view.findViewById(R.id.btn_ai_recommend);
-        btnSaveBudget     = view.findViewById(R.id.btn_save_budget);
-        labelSetBudget    = view.findViewById(R.id.label_set_budget);
+        viewModel = new ViewModelProvider(this).get(CreateBudgetViewModel.class);
+
+        bindViews(view);
+        observeViewModel();
+        setupCategoryClicks();
+
+        btnAiRecommend.setOnClickListener(v -> viewModel.requestAiRecommendation());
+        btnSaveBudget.setOnClickListener(v  ->
+                viewModel.saveBudget(etBudgetAmount.getText().toString().trim()));
+    }
+
+    private void bindViews(@NonNull View view) {
+        cardBudgetInfo     = view.findViewById(R.id.card_budget_info);
+        cardAiResult       = view.findViewById(R.id.card_ai_result);
+        cardInput          = view.findViewById(R.id.card_input);
+        btnAiRecommend     = view.findViewById(R.id.btn_ai_recommend);
+        btnSaveBudget      = view.findViewById(R.id.btn_save_budget);
+        labelSetBudget     = view.findViewById(R.id.label_set_budget);
         tvSelectedCategory = view.findViewById(R.id.tv_selected_category);
-        tvCurrentLimit    = view.findViewById(R.id.tv_current_limit);
-        tvSpent           = view.findViewById(R.id.tv_spent);
+        tvCurrentLimit     = view.findViewById(R.id.tv_current_limit);
+        tvSpent            = view.findViewById(R.id.tv_spent);
         tvAiRecommendation = view.findViewById(R.id.tv_ai_recommendation);
-        etBudgetAmount    = view.findViewById(R.id.et_budget_amount);
+        etBudgetAmount     = view.findViewById(R.id.et_budget_amount);
 
         categoryContainers = new View[categoryViews.length];
         for (int i = 0; i < categoryViews.length; i++) {
             categoryContainers[i] = view.findViewById(categoryViews[i]);
-            final int catId = categoryIds[i];
-            categoryContainers[i].setOnClickListener(v -> onCategorySelected(catId));
         }
-
-        loadCurrency();
-
-        btnAiRecommend.setOnClickListener(v -> getAiRecommendation());
-        btnSaveBudget.setOnClickListener(v -> saveBudget());
     }
 
-    private void loadCurrency() {
-        AppDatabase.databaseWriteExecutor.execute(() -> {
-                SettingsManager sm = ((BudgetBuddyApp) requireActivity()
-                        .getApplication()).getSettingsManager();
-                currentCurrency = sm.getCurrency();
+    private void observeViewModel() {
+        String currency = viewModel.getCurrency();
+
+        // Budget loaded for selected category
+        viewModel.budget.observe(getViewLifecycleOwner(), budget -> {
+            cardBudgetInfo.setVisibility(View.VISIBLE);
+            btnAiRecommend.setVisibility(View.VISIBLE);
+            labelSetBudget.setVisibility(View.VISIBLE);
+            cardInput.setVisibility(View.VISIBLE);
+            btnSaveBudget.setVisibility(View.VISIBLE);
+
+            String toSet = CategoryUtils.getEmoji(selectedCategoryId)
+                            + "  " + CategoryUtils.getName(selectedCategoryId);
+            tvSelectedCategory.setText(toSet);
+
+            if (budget != null && budget.limitInCents > 0) {
+                tvCurrentLimit.setText(MoneyUtils.fromCentsDisplay(budget.limitInCents, currency));
+                etBudgetAmount.setText(MoneyUtils.fromCentsRaw(budget.limitInCents));
+            } else {
+                tvCurrentLimit.setText(R.string.val_not_set);
+                etBudgetAmount.setText("");
+            }
+        });
+
+        // Spent amount for selected category
+        viewModel.spentCents.observe(getViewLifecycleOwner(), spentCents -> {
+            if (spentCents == null) return;
+            tvSpent.setText(MoneyUtils.fromCentsDisplay(spentCents, currency));
+        });
+
+        viewModel.aiResult.observe(getViewLifecycleOwner(), result -> {
+            cardAiResult.setVisibility(View.VISIBLE);
+            if (result == null) {
+                tvAiRecommendation.setText(R.string.loading);
+            } else {
+                tvAiRecommendation.setText(result);
+            }
+        });
+
+        viewModel.toastMessage.observe(getViewLifecycleOwner(), message -> {
+            if (message == null) return;
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
         });
     }
 
-    private void onCategorySelected(int categoryId) {
-        selectedCategoryId = categoryId;
-        highlightCategory(categoryId);
-        cardAiResult.setVisibility(View.GONE);
-        loadBudgetForCategory(categoryId);
+    private void setupCategoryClicks() {
+        for (int i = 0; i < categoryIds.length; i++) {
+            final int catId = categoryIds[i];
+            categoryContainers[i].setOnClickListener(v -> {
+                selectedCategoryId = catId;
+                highlightCategory(catId);
+                cardAiResult.setVisibility(View.GONE);
+                viewModel.onCategorySelected(catId);
+            });
+        }
     }
 
     private void highlightCategory(int categoryId) {
@@ -100,132 +140,5 @@ public class CreateBudgetFragment extends Fragment {
                     categoryIds[i] == categoryId ? 0xFF4A7C7C : 0xFFF5F5F5
             );
         }
-    }
-
-    private void loadBudgetForCategory(int categoryId) {
-        AppDatabase db = AppDatabase.getDatabase(requireContext());
-        long start = TimeUtils.getStartOfMonth(0);
-        long end   = TimeUtils.getEndOfMonth(0);
-
-        AppDatabase.databaseWriteExecutor.execute(() -> {
-            Category cat = db.categoryDao().getCategoryById(categoryId);
-            Budget budget = null;
-            if (cat != null && cat.budgetId > 0) {
-                Budget candidate = db.budgetDao().getBudgetById(cat.budgetId);
-                // Only treat as "current" if it matches the active month
-                if (candidate != null && candidate.startDate == start && candidate.endDate == end) {
-                    budget = candidate;
-                }
-            }
-            double spent = db.expenseDao().getTotalForCategoryAndInterval(categoryId, start, end);
-
-            final Budget finalBudget = budget;
-            final double finalSpent  = spent;
-
-            if (!isAdded()) return;
-            requireActivity().runOnUiThread(() -> {
-                existingBudgetId = finalBudget != null ? finalBudget.id : -1;
-
-                cardBudgetInfo.setVisibility(View.VISIBLE);
-                btnAiRecommend.setVisibility(View.VISIBLE);
-                labelSetBudget.setVisibility(View.VISIBLE);
-                cardInput.setVisibility(View.VISIBLE);
-                btnSaveBudget.setVisibility(View.VISIBLE);
-
-                tvSelectedCategory.setText(CategoryUtils.getEmoji(categoryId) + "  " + CategoryUtils.getName(categoryId));
-                tvSpent.setText(String.format("%s %.2f", currentCurrency, finalSpent));
-
-                if (finalBudget != null && finalBudget.limit > 0) {
-                    tvCurrentLimit.setText(String.format("%s %d", currentCurrency, finalBudget.limit));
-                    etBudgetAmount.setText(String.valueOf(finalBudget.limit));
-                } else {
-                    tvCurrentLimit.setText("Not set");
-                    etBudgetAmount.setText("");
-                }
-            });
-        });
-    }
-
-    private void getAiRecommendation() {
-        if (selectedCategoryId == -1) return;
-
-        tvAiRecommendation.setText("Loading…");
-        cardAiResult.setVisibility(View.VISIBLE);
-
-        AppDatabase db = AppDatabase.getDatabase(requireContext());
-        AppDatabase.databaseWriteExecutor.execute(() -> {
-            double m0 = db.expenseDao().getTotalForCategoryAndInterval(
-                    selectedCategoryId, TimeUtils.getStartOfMonth(0), TimeUtils.getEndOfMonth(0));
-            double m1 = db.expenseDao().getTotalForCategoryAndInterval(
-                    selectedCategoryId, TimeUtils.getStartOfMonth(1), TimeUtils.getEndOfMonth(1));
-            double m2 = db.expenseDao().getTotalForCategoryAndInterval(
-                    selectedCategoryId, TimeUtils.getStartOfMonth(2), TimeUtils.getEndOfMonth(2));
-            double avg = (m0 + m1 + m2) / 3.0;
-            String catName = CategoryUtils.getName(selectedCategoryId);
-
-            ClaudeApiHelper.getBudgetRecommendation(
-                    BuildConfig.ANTHROPIC_API_KEY,
-                    catName, currentCurrency, m0, m1, avg,
-                    new ClaudeApiHelper.ApiCallback() {
-                        @Override public void onSuccess(String recommendation) {
-                            if (!isAdded()) return;
-                            requireActivity().runOnUiThread(() -> {
-                                tvAiRecommendation.setText(recommendation);
-                                cardAiResult.setVisibility(View.VISIBLE);
-                            });
-                        }
-                        @Override public void onError(String error) {
-                            if (!isAdded()) return;
-                            requireActivity().runOnUiThread(() ->
-                                    tvAiRecommendation.setText("⚠️ " + error));
-                        }
-                    }
-            );
-        });
-    }
-
-    private void saveBudget() {
-        if (selectedCategoryId == -1) {
-            Toast.makeText(requireContext(), "Please select a category first", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        String amountStr = etBudgetAmount.getText().toString().trim();
-        if (amountStr.isEmpty()) {
-            Toast.makeText(requireContext(), "Please enter a budget amount", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        int amount;
-        try {
-            amount = (int) Double.parseDouble(amountStr);
-        } catch (NumberFormatException e) {
-            Toast.makeText(requireContext(), "Invalid amount", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        AppDatabase db = AppDatabase.getDatabase(requireContext());
-        long start = TimeUtils.getStartOfMonth(0);
-        long end   = TimeUtils.getEndOfMonth(0);
-
-        AppDatabase.databaseWriteExecutor.execute(() -> {
-            if (existingBudgetId > 0) {
-                db.budgetDao().updateBudget(existingBudgetId, amount, start, end);
-            } else {
-                Budget newBudget = new Budget();
-                newBudget.limit          = amount;
-                newBudget.current_amount = 0;
-                newBudget.startDate      = start;
-                newBudget.endDate        = end;
-                long newId = db.budgetDao().insertBudgetGetId(newBudget);
-                db.categoryDao().updateBudgetId(selectedCategoryId, (int) newId);
-                existingBudgetId = (int) newId;
-            }
-
-            if (!isAdded()) return;
-            requireActivity().runOnUiThread(() -> {
-                Toast.makeText(requireContext(), "Budget saved!", Toast.LENGTH_SHORT).show();
-                loadBudgetForCategory(selectedCategoryId);
-            });
-        });
     }
 }

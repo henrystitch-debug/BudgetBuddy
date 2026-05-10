@@ -3,6 +3,9 @@ package com.github.budgetbuddy.database;
 public final class DBConstants {
     private DBConstants() {}
 
+    // Streak Constants
+    public static final int MIN_STREAK = 1;
+    public static final int INVALID = -1;
     public static final String DATABASE_NAME = "budget_buddy_database";
 
     public static final String FOOD_CATEGORY = "Food";

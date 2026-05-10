@@ -7,8 +7,10 @@ import androidx.room.PrimaryKey;
 public class Budget {
     @PrimaryKey(autoGenerate = true)
     public int id;
-    public double limit;
-    public double current_amount;
+    // NOTE: we store any money related values in cents
+    // Caller must make sure, conversion from other units is done before being called here
+    public long limitInCents;
+    public long currentAmountInCents;
     public int categoryId;
     public long startDate;
     public long endDate;

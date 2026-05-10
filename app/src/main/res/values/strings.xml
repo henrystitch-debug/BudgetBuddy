@@ -33,5 +33,11 @@
     <string name="br_symbol">£</string>
     <string name="eur_symbol">€</string>
     <string name="yen_symbol">¥</string>
-    <string name="empty_cat_prompt">Pick at least one category</string>
+    <string name="empty_cat_prompt">Please select a category</string>
+    <string name="invalid_amount_prompt">Please enter a valid amount</string>
+    <string name="nonpos_amount_prompt">Amount must be greater than 0</string>
+    <string name="exp_saved">Expense Saved!</string>
+    <string name="loading">Loading</string>
+    <string name="val_not_set">Not set</string>
+    <string name="empty_budget_amount">Please enter a budget amount</string>
 </resources>
