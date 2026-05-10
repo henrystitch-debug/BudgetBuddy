@@ -218,7 +218,7 @@ public class AddExpenseFragment extends Fragment {
         long lastUpdated = streak.last_updated;
         int days = daysBetween(lastUpdated, now);
         if (lastUpdated == 0) {
-            db.streakDao().updateStreakById(streak.id, 1, now);
+            db.streakDao().updateStreakById(1, now, streak.id);
             return;
         }
 
@@ -227,7 +227,7 @@ public class AddExpenseFragment extends Fragment {
             return;
         } else if (days == 1) {
             int newCount = streak.counter + 1;
-            db.streakDao().updateStreakById(streak.id, newCount, now);
+            db.streakDao().updateStreakById(newCount, now, streak.id);
         } else {
             return; // same day, no-op
         }
