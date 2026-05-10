@@ -27,7 +27,4 @@ public interface CategoryDao {
 
     @Query("SELECT * FROM category")
     List<Category> getAllCategories();
-
-    @Query("UPDATE category SET budgetId = :budgetId WHERE id = :id")
-    void updateBudgetId(int id, int budgetId);
 }
