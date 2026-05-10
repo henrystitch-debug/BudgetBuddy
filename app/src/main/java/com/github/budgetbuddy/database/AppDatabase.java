@@ -52,7 +52,6 @@ public abstract class AppDatabase extends RoomDatabase {
                                 for (String name : DBConstants.DEFAULT_CATEGORIES) {
                                     Category cat = new Category();
                                     cat.name = name;
-                                    cat.budgetId = 0;
                                     categoryDao.insertCategory(cat);
                                 }
 
