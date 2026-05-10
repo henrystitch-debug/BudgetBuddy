@@ -21,9 +21,9 @@ public interface StreakDao {
     @Query("SELECT MAX(counter) FROM streak")
     int getLongestStreak();
 
-    @Query("SELECT * FROM streak WHERE id = 1 LIMIT 1")
+    @Query("SELECT * FROM streak ORDER BY last_updated DESC, id DESC LIMIT 1")
     Streak getCurrentStreak();
 
-    @Query("UPDATE streak SET counter = :count, last_updated = :timestamp WHERE id = 1")
-    void updateCurrentStreak(int count, long timestamp);
+    @Query("UPDATE streak SET counter = :count, last_updated = :timestamp WHERE id = :id")
+    void updateCurrentStreak(int id, int count, long timestamp);
 }
