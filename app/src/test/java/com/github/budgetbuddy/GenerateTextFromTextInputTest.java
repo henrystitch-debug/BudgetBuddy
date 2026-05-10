@@ -26,7 +26,8 @@ public class GenerateTextFromTextInputTest {
                         null);
 
         Assert.assertNotNull("Response must not be null", response);
-        Assert.assertNotNull("Response text must not be null", response.text());
-        Assert.assertFalse("Response text must not be blank", response.text().isBlank());
+        String responseText = response.text();
+        Assert.assertNotNull("Response text must not be null", responseText);
+        Assert.assertFalse("Response text must not be blank", responseText.isBlank());
     }
 }
