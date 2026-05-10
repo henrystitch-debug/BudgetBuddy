@@ -1,4 +1,22 @@
 <resources>
+   <string name="add_note">Add a Note</string>
+   <string name="amount">Amount</string>
+   <string name="category">Category</string>
+   <string name="create_budget">Create Budget</string>
+   <string name="current_balance">Current Balance</string>
+   <string name="electricity">Electricity</string>
+   <string name="enter_amount">Enter Amount</string>
+   <string name="entertainment">Entertainment</string>
+   <string name="expenses">Expenses</string>
+   <string name="fire">🔥</string>
+   <string name="food">Food</string>
+   <string name="fun">Fun</string>
+   <string name="health">Health</string>
+   <string name="home">Home</string>
+   <string name="income">Income</string>
+   <string name="my_finances">My Finances</string>
+   <string name="number">12345</string>
+   <string name="other">Other</string>
     <string name="app_name">BudgetBuddy</string>
     <string name="overview">Overview</string>
     <string name="budget">Budget</string>
