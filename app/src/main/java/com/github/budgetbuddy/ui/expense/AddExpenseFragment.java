@@ -211,34 +211,34 @@ public class AddExpenseFragment extends Fragment {
     private static void updateStreakAfterLog(AppDatabase db, long now) {
         Streak streak = db.streakDao().getCurrentStreak();
         if (streak == null) {
-            Streak newStreak = new Streak();
-            newStreak.counter = 1;
-            newStreak.start_Date = now;
-            newStreak.last_updated = now;
-            db.streakDao().insertNewStreak(newStreak);
+            createNewStreak(db, now);
             return;
         }
 
         long lastUpdated = streak.last_updated;
         int days = daysBetween(lastUpdated, now);
         if (lastUpdated == 0) {
-            db.streakDao().updateCurrentStreak(streak.id, 1, now);
+            db.streakDao().updateStreakById(streak.id, 1, now);
             return;
         }
 
         if (days >= 2) {
-            Streak newStreak = new Streak();
-            newStreak.counter = 1;
-            newStreak.start_Date = now;
-            newStreak.last_updated = now;
-            db.streakDao().insertNewStreak(newStreak);
+            createNewStreak(db, now);
             return;
         } else if (days == 1) {
             int newCount = streak.counter + 1;
-            db.streakDao().updateCurrentStreak(streak.id, newCount, now);
+            db.streakDao().updateStreakById(streak.id, newCount, now);
         } else {
             return; // same day, no-op
         }
+    }
+
+    private static void createNewStreak(AppDatabase db, long now) {
+        Streak newStreak = new Streak();
+        newStreak.counter = 1;
+        newStreak.start_Date = now;
+        newStreak.last_updated = now;
+        db.streakDao().insertNewStreak(newStreak);
     }
 
     private static int daysBetween(long fromMillis, long toMillis) {

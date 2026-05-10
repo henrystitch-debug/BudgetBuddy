@@ -25,5 +25,5 @@ public interface StreakDao {
     Streak getCurrentStreak();
 
     @Query("UPDATE streak SET counter = :count, last_updated = :timestamp WHERE id = :id")
-    void updateCurrentStreak(int id, int count, long timestamp);
+    void updateStreakById(int id, int count, long timestamp);
 }
