@@ -211,19 +211,20 @@ public class AddExpenseFragment extends Fragment {
     private static void updateStreakAfterLog(AppDatabase db, long now) {
         Streak streak = db.streakDao().getCurrentStreak();
         if (streak == null) {
-            createNewStreak(db, now);
+            createStreakRecord(db, now);
             return;
         }
 
         long lastUpdated = streak.last_updated;
         int days = daysBetween(lastUpdated, now);
         if (lastUpdated == 0) {
-            db.streakDao().updateStreakById(1, now, streak.id);
+            int existingOrMinimumCount = Math.max(1, streak.counter);
+            db.streakDao().updateStreakById(existingOrMinimumCount, now, streak.id);
             return;
         }
 
         if (days >= 2) {
-            createNewStreak(db, now);
+            createStreakRecord(db, now);
             return;
         } else if (days == 1) {
             int newCount = streak.counter + 1;
@@ -233,7 +234,7 @@ public class AddExpenseFragment extends Fragment {
         }
     }
 
-    private static void createNewStreak(AppDatabase db, long now) {
+    private static void createStreakRecord(AppDatabase db, long now) {
         Streak newStreak = new Streak();
         newStreak.counter = 1;
         newStreak.start_Date = now;
