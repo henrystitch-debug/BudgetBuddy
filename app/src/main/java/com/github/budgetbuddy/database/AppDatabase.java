@@ -20,7 +20,7 @@ import com.github.budgetbuddy.database.entity.Streak;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Expense.class, Category.class, Budget.class, Streak.class}, version = 1, exportSchema = false)
+@Database(entities = {Expense.class, Category.class, Budget.class, Streak.class}, version = 2, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ExpenseDao expenseDao();
@@ -42,7 +42,9 @@ public abstract class AppDatabase extends RoomDatabase {
                             context.getApplicationContext(),
                             AppDatabase.class,
                             DBConstants.DATABASE_NAME
-                    ).addCallback(new RoomDatabase.Callback() {
+                    )
+                    .fallbackToDestructiveMigration(true)
+                    .addCallback(new RoomDatabase.Callback() {
                         @Override
                         public void onCreate(@NonNull SupportSQLiteDatabase db) {
                             super.onCreate(db);
