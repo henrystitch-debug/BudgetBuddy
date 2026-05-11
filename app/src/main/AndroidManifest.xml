@@ -25,9 +25,6 @@
         <activity
             android:name=".ui.onboarding.OnboardingActivity"
             android:exported="false" />
-        <activity
-            android:name=".ui.onboarding.OnboardingActivityTrial"
-            android:exported="true" />
     </application>
 
 </manifest>

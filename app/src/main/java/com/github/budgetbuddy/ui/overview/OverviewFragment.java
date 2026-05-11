@@ -20,11 +20,9 @@ import com.github.budgetbuddy.MainActivity;
 import com.github.budgetbuddy.R;
 import com.github.budgetbuddy.SettingsManager;
 import com.github.budgetbuddy.database.AppDatabase;
-import com.github.budgetbuddy.database.entity.Budget;
 import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Expense;
 import com.github.budgetbuddy.database.entity.Streak;
-import com.github.budgetbuddy.ui.onboarding.OnboardingActivity;
 import com.github.budgetbuddy.utils.CategoryUtils;
 import com.github.budgetbuddy.utils.TimeUtils;
 import com.github.mikephil.charting.charts.PieChart;
@@ -34,7 +32,6 @@ import com.github.mikephil.charting.data.PieEntry;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class OverviewFragment extends Fragment {
 
