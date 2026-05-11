@@ -31,11 +31,11 @@ public interface ExpenseDao {
     @Query("SELECT SUM(amountInCents) FROM expense WHERE entryDateStartInMilliSec >= :startDate AND entryDateStartInMilliSec <= :endDate")
     Long getTotalSpending(long startDate, long endDate);
 
-    @Query("SELECT categoryId, SUM(amountInCents) as total FROM expense WHERE entryDateStartInMilliSec >= :startDate AND entryDateStartInMilliSec <= :endDate GROUP BY categoryId")
+    @Query("SELECT categoryId, SUM(amountInCents) as totalInCents FROM expense WHERE entryDateStartInMilliSec >= :startDate AND entryDateStartInMilliSec <= :endDate GROUP BY categoryId")
     List<CategorySpending> getSpendingByCategory(long startDate, long endDate);
 
     // Requires entryDateStartInMilliSec to be stored as start-of-day millis (use ExpenseRepository to insert/update).
-    @Query("SELECT entryDateStartInMilliSec as date, SUM(amountInCents) as total FROM expense WHERE entryDateStartInMilliSec >= :startDate AND entryDateStartInMilliSec <= :endDate GROUP BY entryDateStartInMilliSec")
+    @Query("SELECT entryDateStartInMilliSec as date, SUM(amountInCents) as totalInCents FROM expense WHERE entryDateStartInMilliSec >= :startDate AND entryDateStartInMilliSec <= :endDate GROUP BY entryDateStartInMilliSec")
     List<DailySpending> getDailySpending(long startDate, long endDate);
 
     @Query("UPDATE expense SET amountInCents = :amount, categoryId = :categoryId, entryDateStartInMilliSec = :entryDateStartInMilliSec, note = :note, repeat = :repeat WHERE id = :id")

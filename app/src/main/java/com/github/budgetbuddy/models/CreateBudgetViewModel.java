@@ -106,7 +106,7 @@ public class CreateBudgetViewModel extends AndroidViewModel {
             String avgDisplay = MoneyUtils.fromCentsDisplay(avg, currentCurrency);
 
             ClaudeApiHelper.getBudgetRecommendation(
-                    BuildConfig.ANTHROPIC_API_KEY,
+                    null,
                     catName, currentCurrency, m0Display, m1Display, avgDisplay,
                     new ClaudeApiHelper.ApiCallback() {
                         @Override public void onSuccess(String recommendation) {

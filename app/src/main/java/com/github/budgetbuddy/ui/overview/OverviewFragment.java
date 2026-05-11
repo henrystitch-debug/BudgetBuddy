@@ -99,7 +99,7 @@ public class OverviewFragment extends Fragment {
     }
 
     private void loadGreetingAndCurrency() {
-        SettingsManager sm = ((BudgetBuddyApp) Objects.requireNonNull(getActivity())
+        SettingsManager sm = ((BudgetBuddyApp) requireActivity()
                 .getApplication()).getSettingsManager();
         String name = sm.getUserName();
         AppDatabase db = AppDatabase.getDatabase(requireContext());
@@ -168,11 +168,12 @@ public class OverviewFragment extends Fragment {
         long monthEnd   = TimeUtils.getEndOfMonth(0);
 
         AppDatabase.databaseWriteExecutor.execute(() -> {
+
             List<Expense> allExpenses = db.expenseDao().getExpensesInterval(startDate, endDate);
             double[] categoryTotals = new double[13];
             for (Expense e : allExpenses) {
                 if (e.categoryId >= 1 && e.categoryId <= 12) {
-                    categoryTotals[e.categoryId] += e.amount;
+                    categoryTotals[e.categoryId] += e.amountInCents;
                 }
             }
             double totalSpent = 0;
@@ -186,11 +187,12 @@ public class OverviewFragment extends Fragment {
             List<int[]> progressRows = new ArrayList<>();
             for (int catId = 1; catId <= 12; catId++) {
                 Category cat = db.categoryDao().getCategoryById(catId);
-                if (cat == null || cat.budgetId <= 0) continue;
-                Budget b = db.budgetDao().getBudgetById(cat.budgetId);
-                if (b == null || b.limit <= 0) continue;
-                if (b.startDate != monthStart || b.endDate != monthEnd) continue;
-                progressRows.add(new int[]{catId, (int) b.limit});
+                // TODO: This should not be done here, preferrably in a ViewModel
+//                if (cat == null || cat.budgetId <= 0) continue;
+//                Budget b = db.budgetDao().getBudgetById(cat.budgetId);
+//                if (b == null || b.limit <= 0) continue;
+//                if (b.startDate != monthStart || b.endDate != monthEnd) continue;
+//                progressRows.add(new int[]{catId, (int) b.limit});
             }
 
             if (!isAdded()) return;

@@ -20,7 +20,4 @@ public class CategoryRepository {
         return categoryDao.getCategories();
     }
 
-    public void updateBudgetId(int selectedCategoryId, int newId) {
-
-    }
 }

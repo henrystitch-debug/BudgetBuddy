@@ -25,9 +25,9 @@ public class ClaudeApiHelper {
             String apiKey,
             String categoryName,
             String currency,
-            double thisMonthSpend,
-            double lastMonthSpend,
-            double threeMonthAvg,
+            String thisMonthSpend,
+            String lastMonthSpend,
+            String threeMonthAvg,
             ApiCallback callback) {
 
         if (apiKey == null || apiKey.trim().isEmpty()) {
@@ -37,9 +37,9 @@ public class ClaudeApiHelper {
 
         String prompt = "I use a budget tracking app. " +
                 "Category: " + categoryName + ". Currency: " + currency + ". " +
-                "This month I spent " + String.format("%.2f", thisMonthSpend) + currency + ". " +
-                "Last month I spent " + String.format("%.2f", lastMonthSpend) + currency + ". " +
-                "My 3-month average is " + String.format("%.2f", threeMonthAvg) + currency + ". " +
+                "This month I spent " + currency + thisMonthSpend + ". " +
+                "Last month I spent " + currency + lastMonthSpend +  ". " +
+                "My 3-month average is " + currency + threeMonthAvg + ". " +
                 "Recommend a monthly budget for this category. " +
                 "Reply in 2-3 sentences and suggest a specific amount.";
 

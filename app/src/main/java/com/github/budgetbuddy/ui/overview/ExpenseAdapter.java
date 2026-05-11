@@ -53,11 +53,11 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHold
 
         // Meta: "CategoryName · Apr 10"
         String categoryName = CategoryUtils.getName(expense.categoryId);
-        String date = TimeUtils.formatDate(expense.entryDate);
+        String date = TimeUtils.formatDate(expense.entryDateStartInMilliSec);
         holder.tvMeta.setText(categoryName + " · " + date);
 
         // Amount
-        holder.tvAmount.setText(String.format("- € %.2f", expense.amount));
+        holder.tvAmount.setText(String.format("- € %.2f", expense.amountInCents));
 
         // Click listener
         holder.itemView.setOnClickListener(v -> {

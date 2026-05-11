@@ -1,6 +1,5 @@
 package com.github.budgetbuddy.ui.expense;
 
-import android.app.Application;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
