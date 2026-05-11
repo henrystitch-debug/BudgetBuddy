@@ -14,13 +14,12 @@ import com.github.budgetbuddy.api.ClaudeApiHelper;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.DBConstants;
 import com.github.budgetbuddy.database.entity.Budget;
+import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.repository.BudgetRepository;
 import com.github.budgetbuddy.database.repository.CategoryRepository;
 import com.github.budgetbuddy.database.repository.ExpenseRepository;
-import com.github.budgetbuddy.utils.CategoryUtils;
 import com.github.budgetbuddy.utils.MoneyUtils;
 import com.github.budgetbuddy.utils.TimeUtils;
-import com.github.mikephil.charting.BuildConfig;
 
 public class CreateBudgetViewModel extends AndroidViewModel {
 
@@ -85,41 +84,44 @@ public class CreateBudgetViewModel extends AndroidViewModel {
         });
     }
 
-    // ── AI recommendation ─────────────────────────────────────────────
+
     public void requestAiRecommendation() {
-        if (selectedCategoryId == -1) return;
+    if (selectedCategoryId == DBConstants.INVALID) return;
 
-        _aiResult.postValue(null); // null = loading state
+    _aiResult.postValue(null);
 
-        AppDatabase.databaseWriteExecutor.execute(() -> {
-            long m0 = expenseRepository.getTotalSpentForCategoryAndInterval(
-                    selectedCategoryId, TimeUtils.getStartOfMonth(0), TimeUtils.getEndOfMonth(0));
-            long m1 = expenseRepository.getTotalSpentForCategoryAndInterval(
-                    selectedCategoryId, TimeUtils.getStartOfMonth(1), TimeUtils.getEndOfMonth(1));
-            long m2 = expenseRepository.getTotalSpentForCategoryAndInterval(
-                    selectedCategoryId, TimeUtils.getStartOfMonth(2), TimeUtils.getEndOfMonth(2));
-            long avg = (m0 + m1 + m2) / 3L;
+    AppDatabase.databaseWriteExecutor.execute(() -> {
+        long m0 = expenseRepository.getTotalSpentForCategoryAndInterval(
+                selectedCategoryId, TimeUtils.getStartOfMonth(0), TimeUtils.getEndOfMonth(0));
+        long m1 = expenseRepository.getTotalSpentForCategoryAndInterval(
+                selectedCategoryId, TimeUtils.getStartOfMonth(1), TimeUtils.getEndOfMonth(1));
+        long m2 = expenseRepository.getTotalSpentForCategoryAndInterval(
+                selectedCategoryId, TimeUtils.getStartOfMonth(2), TimeUtils.getEndOfMonth(2));
+        long avg = (m0 + m1 + m2) / 3L;
 
-            String catName    = CategoryUtils.getName(selectedCategoryId);
-            String m0Display  = MoneyUtils.fromCentsDisplay(m0,  currentCurrency);
-            String m1Display  = MoneyUtils.fromCentsDisplay(m1,  currentCurrency);
-            String avgDisplay = MoneyUtils.fromCentsDisplay(avg, currentCurrency);
+        // ── CHANGED: fetch name from DB via repository instead of CategoryUtils ──
+        Category cat     = categoryRepository.getCategoryById(selectedCategoryId);
+        String catName   = cat != null ? cat.name : "";
+        // ────────────────────────────────────────────────────────────────────────
 
-            ClaudeApiHelper.getBudgetRecommendation(
-                    null,
-                    catName, currentCurrency, m0Display, m1Display, avgDisplay,
-                    new ClaudeApiHelper.ApiCallback() {
-                        @Override public void onSuccess(String recommendation) {
-                            _aiResult.postValue(recommendation);
-                        }
-                        @Override public void onError(String error) {
-                            _aiResult.postValue("⚠️ " + error);
-                        }
+        String m0Display  = MoneyUtils.fromCentsDisplay(m0,  currentCurrency);
+        String m1Display  = MoneyUtils.fromCentsDisplay(m1,  currentCurrency);
+        String avgDisplay = MoneyUtils.fromCentsDisplay(avg, currentCurrency);
+
+        ClaudeApiHelper.getBudgetRecommendation(
+                null,
+                catName, currentCurrency, m0Display, m1Display, avgDisplay,
+                new ClaudeApiHelper.ApiCallback() {
+                    @Override public void onSuccess(String recommendation) {
+                        _aiResult.postValue(recommendation);
                     }
-            );
-        });
-    }
-
+                    @Override public void onError(String error) {
+                        _aiResult.postValue("⚠️ " + error);
+                    }
+                }
+        );
+    });
+}
     // ── Save budget ───────────────────────────────────────────────────
     public void saveBudget(String amountStr) {
         if (selectedCategoryId == DBConstants.INVALID) {

@@ -20,7 +20,7 @@ import com.github.budgetbuddy.database.entity.Streak;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Expense.class, Category.class, Budget.class, Streak.class}, version = 2, exportSchema = false)
+@Database(entities = {Expense.class, Category.class, Budget.class, Streak.class}, version = 3, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ExpenseDao expenseDao();
@@ -52,12 +52,13 @@ public abstract class AppDatabase extends RoomDatabase {
                                 AppDatabase database = INSTANCE;
 
                                 CategoryDao categoryDao = database.categoryDao();
-                                for (String name : DBConstants.DEFAULT_CATEGORIES) {
-                                    Category cat = new Category();
-                                    cat.name = name;
-                                    categoryDao.insertCategory(cat);
-                                }
-
+                                 for (Object[] data : DBConstants.DEFAULT_CATEGORIES) {
+                                         Category cat = new Category();
+                                         cat.name  = (String) data[0];
+                                         cat.icon = (String) data[1];
+                                         cat.color = (String) data[2];
+                                         categoryDao.insertCategory(cat);
+                                 }
                                 StreakDao streakDao = database.streakDao();
                                 Streak streak = new Streak();
                                 streak.counter = 0;

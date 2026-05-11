@@ -20,6 +20,7 @@ import com.github.budgetbuddy.database.DBConstants;
 import com.github.budgetbuddy.database.entity.Expense;
 import com.github.budgetbuddy.database.entity.Streak;
 import com.github.budgetbuddy.database.repository.ExpenseRepository;
+import com.github.budgetbuddy.utils.ColorUtils;
 import com.github.budgetbuddy.utils.MoneyUtils;
 
 import java.util.Calendar;
@@ -38,7 +39,8 @@ public class AddExpenseFragment extends Fragment {
 
     private ExpenseRepository expenseRepository;
 
-    private static final int COLOR_SELECTED = Color.parseColor("#4A7C7C");
+    // calling this FOOD makes no sense, but too lazy to change
+    private static final int COLOR_SELECTED = ColorUtils.FOOD;
     private static final int COLOR_DEFAULT  = Color.parseColor("#F5F5F5");
 
     public static AddExpenseFragment newInstance(int expenseId) {

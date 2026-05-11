@@ -9,12 +9,17 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.budgetbuddy.R;
+import com.github.budgetbuddy.SettingsManager;
+import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Expense;
-import com.github.budgetbuddy.utils.CategoryUtils;
+import com.github.budgetbuddy.utils.MoneyUtils;
 import com.github.budgetbuddy.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import android.content.Context;
 
 public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHolder> {
 
@@ -23,12 +28,20 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHold
     }
 
     private List<Expense> expenses;
+    private Map<Integer, Category> categoryMap;  // ── ADDED
     private final OnExpenseClickListener listener;
+    private final SettingsManager settingsManager;
 
-    public ExpenseAdapter(List<Expense> expenses, OnExpenseClickListener listener) {
-        this.expenses = new ArrayList<>(expenses);
-        this.listener = listener;
+    // ── CHANGED: added categoryMap parameter ──────────────────────────────
+    public ExpenseAdapter(Context context, List<Expense> expenses,
+                          Map<Integer, Category> categoryMap,
+                          OnExpenseClickListener listener) {
+        this.expenses    = new ArrayList<>(expenses);
+        this.categoryMap = categoryMap;
+        this.listener    = listener;
+        this.settingsManager = new SettingsManager(context);
     }
+    // ──────────────────────────────────────────────────────────────────────
 
     @NonNull
     @Override
@@ -42,28 +55,27 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Expense expense = expenses.get(position);
 
-        // Category icon (emoji)
-        holder.tvCatIcon.setText(CategoryUtils.getEmoji(expense.categoryId));
+        // ── CHANGED: look up from map instead of CategoryUtils ─────────────
+        Category cat      = categoryMap.get(expense.categoryId);
+        String   icon    = cat != null ? cat.icon : "?";
+        String   catName  = cat != null ? cat.name  : "";
+        // ──────────────────────────────────────────────────────────────────
 
-        // Note: use category name if note is null or empty
+        holder.tvCatIcon.setText(icon);
+
         String displayNote = (expense.note != null && !expense.note.trim().isEmpty())
                 ? expense.note
-                : CategoryUtils.getName(expense.categoryId);
+                : catName;
         holder.tvNote.setText(displayNote);
 
-        // Meta: "CategoryName · Apr 10"
-        String categoryName = CategoryUtils.getName(expense.categoryId);
-        String date = TimeUtils.formatDate(expense.entryDateStartInMilliSec);
-        holder.tvMeta.setText(categoryName + " · " + date);
+        String date  = TimeUtils.formatDate(expense.entryDateStartInMilliSec);
+        holder.tvMeta.setText(catName + " · " + date);
 
-        // Amount
-        holder.tvAmount.setText(String.format("- € %.2f", expense.amountInCents));
+        String currency = settingsManager.getCurrency();
+        holder.tvAmount.setText(MoneyUtils.fromCentsDisplay(expense.amountInCents, currency));
 
-        // Click listener
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onExpenseClick(expense.id);
-            }
+            if (listener != null) listener.onExpenseClick(expense.id);
         });
     }
 
@@ -72,8 +84,10 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHold
         return expenses.size();
     }
 
-    public void updateExpenses(List<Expense> newExpenses) {
-        this.expenses = new ArrayList<>(newExpenses);
+    // ── ADDED: allows caller to refresh the map alongside expenses ─────────
+    public void updateExpenses(List<Expense> newExpenses, Map<Integer, Category> newCategoryMap) {
+        this.expenses    = new ArrayList<>(newExpenses);
+        this.categoryMap = newCategoryMap;
         notifyDataSetChanged();
     }
 
@@ -86,9 +100,9 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHold
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvCatIcon = itemView.findViewById(R.id.tv_cat_icon);
-            tvNote = itemView.findViewById(R.id.tv_note);
-            tvMeta = itemView.findViewById(R.id.tv_meta);
-            tvAmount = itemView.findViewById(R.id.tv_amount);
+            tvNote    = itemView.findViewById(R.id.tv_note);
+            tvMeta    = itemView.findViewById(R.id.tv_meta);
+            tvAmount  = itemView.findViewById(R.id.tv_amount);
         }
     }
 }

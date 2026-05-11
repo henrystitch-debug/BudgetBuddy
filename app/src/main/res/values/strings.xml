@@ -52,4 +52,6 @@
     <string name="total_spent">Total Spent</string>
     <string name="transport">Transport</string>
     <string name="you_stayed_in_budget">You stayed in budget within 3 months in a row!</string>
+    <string name="log_xpense">Log an expense to start your streak.</string>
+    <string name="last_2wks">Last 2 Weeks</string>
 </resources>

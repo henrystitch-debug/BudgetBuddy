@@ -18,7 +18,6 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -33,8 +32,9 @@ public class CategoryFragment extends Fragment implements OnboardingAdvancer {
         chipGroup = v.findViewById(R.id.chip_group_categories);
 
         // pre-select all defaults
-        selectedCategories.addAll(Arrays.asList(DBConstants.DEFAULT_CATEGORIES));
-        for (String name : DBConstants.DEFAULT_CATEGORIES) {
+        for (Object[] category : DBConstants.DEFAULT_CATEGORIES) {
+            String name = (String) category[0];
+            selectedCategories.add(name);
             addChip(name, true);
         }
 

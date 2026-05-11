@@ -23,7 +23,7 @@ import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Expense;
 import com.github.budgetbuddy.database.entity.Streak;
-import com.github.budgetbuddy.utils.CategoryUtils;
+import com.github.budgetbuddy.utils.ColorUtils;
 import com.github.budgetbuddy.utils.TimeUtils;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
@@ -31,7 +31,9 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class OverviewFragment extends Fragment {
 
@@ -51,6 +53,9 @@ public class OverviewFragment extends Fragment {
     private static final int COLLAPSED_COUNT = 3;
     private boolean expensesExpanded = false;
     private List<Expense> currentExpenses = new ArrayList<>();
+
+    // ── ADDED: cache loaded from DB once per data refresh ──────────────────
+    private Map<Integer, Category> categoryMap = new HashMap<>();
 
     @Nullable
     @Override
@@ -75,7 +80,9 @@ public class OverviewFragment extends Fragment {
         rvExpenses              = view.findViewById(R.id.rv_expenses);
         tvSeeAllExpenses        = view.findViewById(R.id.tv_see_all_expenses);
 
-        expenseAdapter = new ExpenseAdapter(new ArrayList<>(), expenseId -> {
+        expenseAdapter = new ExpenseAdapter(requireContext(), new ArrayList<>(),
+                categoryMap,
+                expenseId -> {
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).showAddExpenseForEdit(expenseId);
             }
@@ -101,7 +108,7 @@ public class OverviewFragment extends Fragment {
         String name = sm.getUserName();
         AppDatabase db = AppDatabase.getDatabase(requireContext());
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            String currency = sm.getCurrency();
+            final String currency = sm.getCurrency();
             Streak streak = db.streakDao().getCurrentStreak();
             final int streakCount = streak != null ? streak.counter : 0;
 
@@ -109,11 +116,13 @@ public class OverviewFragment extends Fragment {
             requireActivity().runOnUiThread(() -> {
                 if (!isAdded()) return;
                 currentCurrency = currency;
-                tvGreeting.setText("Hey, " + (name != null ? name : "there") + "!");
+                String s = "Hey, " + (name != null ? name : "there") + "!";
+                tvGreeting.setText(s);
                 if (streakCount > 0) {
-                    tvSubtitle.setText("🔥 " + streakCount + "-day streak — keep it up!");
+                    s = "🔥 " + streakCount + "-day streak — keep it up!";
+                    tvSubtitle.setText(s);
                 } else {
-                    tvSubtitle.setText("Log an expense to start your streak.");
+                    tvSubtitle.setText(R.string.log_xpense);
                 }
                 setThisMonth();
             });
@@ -139,7 +148,7 @@ public class OverviewFragment extends Fragment {
     private void setTwoWeeks() {
         currentStartDate = TimeUtils.getStartOfTwoWeeksAgo();
         currentEndDate   = TimeUtils.getNow();
-        tvMonth.setText("Last 2 Weeks");
+        tvMonth.setText(R.string.last_2wks);
         updateTabStyles(2);
         loadDetailData();
     }
@@ -153,51 +162,50 @@ public class OverviewFragment extends Fragment {
         tabTwoWeeks.setTextColor(Color.parseColor("#888888"));
 
         TextView selectedTab = selected == 0 ? tabThisMonth : selected == 1 ? tabLastMonth : tabTwoWeeks;
-        selectedTab.setBackgroundColor(Color.parseColor("#4A7C7C"));
+        selectedTab.setBackgroundColor(ColorUtils.FOOD);
         selectedTab.setTextColor(Color.WHITE);
     }
 
     private void loadDetailData() {
         AppDatabase db = AppDatabase.getDatabase(requireContext());
-        long startDate = currentStartDate;
-        long endDate   = currentEndDate;
-        long monthStart = TimeUtils.getStartOfMonth(0);
-        long monthEnd   = TimeUtils.getEndOfMonth(0);
+        long startDate  = currentStartDate;
+        long endDate    = currentEndDate;
 
         AppDatabase.databaseWriteExecutor.execute(() -> {
 
+            // ── ADDED: load all categories and build lookup map ────────────
+            List<Category> allCategories = db.categoryDao().getAllCategories();
+            Map<Integer, Category> catMap = new HashMap<>();
+            for (Category c : allCategories) catMap.put(c.id, c);
+
             List<Expense> allExpenses = db.expenseDao().getExpensesInterval(startDate, endDate);
-            double[] categoryTotals = new double[13];
+
+            // ── CHANGED: accumulate totals by actual DB id, not magic 1–12 ─
+            Map<Integer, Long> categoryTotals = new HashMap<>();
             for (Expense e : allExpenses) {
-                if (e.categoryId >= 1 && e.categoryId <= 12) {
-                    categoryTotals[e.categoryId] += e.amountInCents;
-                }
+                categoryTotals.merge(e.categoryId, e.amountInCents, Long::sum);
             }
-            double totalSpent = 0;
-            for (int i = 1; i <= 12; i++) totalSpent += categoryTotals[i];
-            final double finalTotalSpent = totalSpent;
+
+            long totalSpent = 0;
+            for (long v : categoryTotals.values()) totalSpent += v;
+            final long finalTotalSpent = totalSpent;
 
             List<Expense> recent = db.expenseDao().getRecentExpenses(startDate, endDate, 1000);
 
-            // Per-category budget progress: for each category, look up its current-month budget
-            // via Category.budgetId (single-user model: budget is global per category per month)
-            List<int[]> progressRows = new ArrayList<>();
-            for (int catId = 1; catId <= 12; catId++) {
-                Category cat = db.categoryDao().getCategoryById(catId);
-                // TODO: This should not be done here, preferrably in a ViewModel
-//                if (cat == null || cat.budgetId <= 0) continue;
-//                Budget b = db.budgetDao().getBudgetById(cat.budgetId);
-//                if (b == null || b.limit <= 0) continue;
-//                if (b.startDate != monthStart || b.endDate != monthEnd) continue;
-//                progressRows.add(new int[]{catId, (int) b.limit});
-            }
-
             if (!isAdded()) return;
+
+            // ── CHANGED: capture finals for lambda ─────────────────────────
+            final Map<Integer, Category> finalCatMap     = catMap;
+            final Map<Integer, Long>   finalCatTotals  = categoryTotals;
+
             requireActivity().runOnUiThread(() -> {
                 if (!isAdded()) return;
-                updatePieChart(categoryTotals, finalTotalSpent);
-                updateBudgetProgress(progressRows, categoryTotals);
-                currentExpenses = recent;
+                // ── CHANGED: store map on fragment, pass to render methods ──
+                categoryMap = finalCatMap;
+                updatePieChart(finalCatTotals, finalTotalSpent);
+                updateBudgetProgress(new ArrayList<>(), finalCatTotals);
+                // ────────────────────────────────────────────────────────────
+                currentExpenses  = recent;
                 expensesExpanded = false;
                 renderExpenses();
             });
@@ -212,7 +220,7 @@ public class OverviewFragment extends Fragment {
         } else {
             toShow = currentExpenses.subList(0, COLLAPSED_COUNT);
         }
-        expenseAdapter.updateExpenses(toShow);
+        expenseAdapter.updateExpenses(toShow, categoryMap);
 
         if (total <= COLLAPSED_COUNT) {
             tvSeeAllExpenses.setVisibility(View.GONE);
@@ -224,15 +232,16 @@ public class OverviewFragment extends Fragment {
         }
     }
 
-    private void updatePieChart(double[] categoryTotals, double totalSpent) {
+    private void updatePieChart(Map<Integer, Long> categoryTotals, long totalSpent) {
         List<PieEntry> entries = new ArrayList<>();
-        List<Integer> colors  = new ArrayList<>();
+        List<Integer>  colors  = new ArrayList<>();
 
-        for (int i = 1; i <= 12; i++) {
-            if (categoryTotals[i] > 0) {
-                entries.add(new PieEntry((float) categoryTotals[i], CategoryUtils.getName(i)));
-                colors.add(CategoryUtils.getColor(i));
-            }
+        for (Map.Entry<Integer, Long> entry : categoryTotals.entrySet()) {
+            if (entry.getValue() <= 0) continue;
+            Category cat = categoryMap.get(entry.getKey());
+            if (cat == null) continue;                         // unknown id, skip
+            entries.add(new PieEntry(entry.getValue() / 100f, cat.name));
+            colors.add(Color.parseColor(cat.color));
         }
 
         if (entries.isEmpty()) {
@@ -255,7 +264,8 @@ public class OverviewFragment extends Fragment {
         pieChart.setHoleRadius(55f);
         pieChart.setTransparentCircleRadius(60f);
         pieChart.setHoleColor(Color.WHITE);
-        pieChart.setCenterText(String.format("%s %.0f\ntotal spent", currentCurrency, totalSpent));
+        String s = String.format("%s %.0f\ntotal spent", currentCurrency, totalSpent / 100f);
+        pieChart.setCenterText(s);
         pieChart.setCenterTextSize(13f);
         pieChart.setCenterTextColor(Color.parseColor("#1A1A1A"));
         pieChart.getDescription().setEnabled(false);
@@ -278,9 +288,9 @@ public class OverviewFragment extends Fragment {
                 legendContainer.addView(currentRow);
             }
 
-            PieEntry entry = entries.get(i);
-            int color = colors.get(i);
-            double pct = totalSpent > 0 ? (entry.getValue() / totalSpent) * 100 : 0;
+            PieEntry entry  = entries.get(i);
+            int      color  = colors.get(i);
+            double   pct    = totalSpent > 0 ? (entry.getValue() / totalSpent) * 100 : 0;
 
             LinearLayout legendItem = new LinearLayout(getContext());
             legendItem.setOrientation(LinearLayout.HORIZONTAL);
@@ -316,7 +326,8 @@ public class OverviewFragment extends Fragment {
         }
     }
 
-    private void updateBudgetProgress(List<int[]> rows, double[] categoryTotals) {
+    // ── CHANGED: signature now takes Map<Integer,Double> instead of double[] ─
+    private void updateBudgetProgress(List<int[]> rows, Map<Integer, Long> categoryTotals) {
         budgetProgressContainer.removeAllViews();
 
         if (rows.isEmpty()) {
@@ -329,19 +340,24 @@ public class OverviewFragment extends Fragment {
         }
 
         for (int idx = 0; idx < rows.size(); idx++) {
-            int[] row = rows.get(idx);
-            int categoryId = row[0];
-            int limit      = row[1];
-            double spent   = categoryTotals[categoryId];
-
-            addCategoryProgressRow(categoryId, limit, spent, idx > 0);
+            int[]  row        = rows.get(idx);
+            int    categoryId = row[0];
+            int    limit      = row[1];
+            Long spentInCents      = categoryTotals.getOrDefault(categoryId, 0L);
+            addCategoryProgressRow(categoryId, limit, spentInCents, idx > 0);
         }
     }
+    // ────────────────────────────────────────────────────────────────────────
 
-    private void addCategoryProgressRow(int categoryId, int limit, double spent, boolean addTopMargin) {
-        boolean exceeded = spent > limit;
-        int pct = limit > 0 ? (int) ((spent / limit) * 100) : 0;
-        int displayPct = Math.min(pct, 100);
+    private void addCategoryProgressRow(int categoryId, int limit, Long spent, boolean addTopMargin) {
+        boolean exceeded   = spent > limit;
+        int     pct        = limit > 0 ? (int) ((spent / limit) * 100) : 0;
+        int     displayPct = Math.min(pct, 100);
+
+        // ── CHANGED: look up Category from map instead of CategoryUtils ────
+        Category cat      = categoryMap.get(categoryId);
+        String   catLabel = cat != null ? cat.icon + "  " + cat.name : "? Unknown";
+        // ──────────────────────────────────────────────────────────────────
 
         LinearLayout block = new LinearLayout(getContext());
         block.setOrientation(LinearLayout.VERTICAL);
@@ -357,14 +373,18 @@ public class OverviewFragment extends Fragment {
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
         TextView nameView = new TextView(getContext());
-        nameView.setText(CategoryUtils.getEmoji(categoryId) + "  " + CategoryUtils.getName(categoryId));
+        nameView.setText(catLabel);                            // ── CHANGED
         nameView.setTextSize(13f);
         nameView.setTextColor(Color.parseColor("#1A1A1A"));
         nameView.setLayoutParams(new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
+        double spentDisplay = spent / 100.0;
+        double limitDisplay = limit / 100.0;
+        String s = String.format("%s %.2f / %s %.2f", currentCurrency, spentDisplay,
+                currentCurrency, limitDisplay);
         TextView amtView = new TextView(getContext());
-        amtView.setText(String.format("%s %.0f / %s %d", currentCurrency, spent, currentCurrency, limit));
+        amtView.setText(s);
         amtView.setTextSize(11f);
         amtView.setTextColor(exceeded ? Color.parseColor("#E53935") : Color.parseColor("#888888"));
 

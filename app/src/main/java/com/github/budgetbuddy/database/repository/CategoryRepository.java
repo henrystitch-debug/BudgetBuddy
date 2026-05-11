@@ -20,4 +20,7 @@ public class CategoryRepository {
         return categoryDao.getCategories();
     }
 
+    public Category getCategoryById(int id) {
+        return categoryDao.getCategoryById(id);
+    }
 }

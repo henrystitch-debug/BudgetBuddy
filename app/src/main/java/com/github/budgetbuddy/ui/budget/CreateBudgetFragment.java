@@ -14,9 +14,18 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.github.budgetbuddy.R;
+import com.github.budgetbuddy.database.AppDatabase;
+import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.models.CreateBudgetViewModel;
-import com.github.budgetbuddy.utils.CategoryUtils;
+import com.github.budgetbuddy.utils.ColorUtils;
 import com.github.budgetbuddy.utils.MoneyUtils;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 public class CreateBudgetFragment extends Fragment {
 
@@ -28,7 +37,9 @@ public class CreateBudgetFragment extends Fragment {
 
     private CreateBudgetViewModel viewModel;
 
-    private final int[] categoryIds   = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    // ── CHANGED: removed hardcoded categoryIds int[], categories come from DB ──
+    private Map<Integer, Category> categoryMap = new HashMap<>();
+
     private final int[] categoryViews = {
             R.id.cat_food, R.id.cat_home, R.id.cat_transport, R.id.cat_school,
             R.id.cat_health, R.id.cat_shopping, R.id.cat_fun, R.id.cat_other,
@@ -51,11 +62,14 @@ public class CreateBudgetFragment extends Fragment {
 
         bindViews(view);
         observeViewModel();
-        setupCategoryClicks();
 
         btnAiRecommend.setOnClickListener(v -> viewModel.requestAiRecommendation());
         btnSaveBudget.setOnClickListener(v  ->
                 viewModel.saveBudget(etBudgetAmount.getText().toString().trim()));
+
+        // ── ADDED: load categories then wire up click listeners ────────────
+        loadCategoriesAndSetupClicks();
+        // ──────────────────────────────────────────────────────────────────
     }
 
     private void bindViews(@NonNull View view) {
@@ -80,7 +94,6 @@ public class CreateBudgetFragment extends Fragment {
     private void observeViewModel() {
         String currency = viewModel.getCurrency();
 
-        // Budget loaded for selected category
         viewModel.budget.observe(getViewLifecycleOwner(), budget -> {
             cardBudgetInfo.setVisibility(View.VISIBLE);
             btnAiRecommend.setVisibility(View.VISIBLE);
@@ -88,9 +101,11 @@ public class CreateBudgetFragment extends Fragment {
             cardInput.setVisibility(View.VISIBLE);
             btnSaveBudget.setVisibility(View.VISIBLE);
 
-            String toSet = CategoryUtils.getEmoji(selectedCategoryId)
-                            + "  " + CategoryUtils.getName(selectedCategoryId);
-            tvSelectedCategory.setText(toSet);
+            // ── CHANGED: look up from map instead of CategoryUtils ─────────
+            Category cat = categoryMap.get(selectedCategoryId);
+            tvSelectedCategory.setText(cat != null
+                    ? cat.icon + "  " + cat.name
+                    : "");
 
             if (budget != null && budget.limitInCents > 0) {
                 tvCurrentLimit.setText(MoneyUtils.fromCentsDisplay(budget.limitInCents, currency));
@@ -101,7 +116,6 @@ public class CreateBudgetFragment extends Fragment {
             }
         });
 
-        // Spent amount for selected category
         viewModel.spentCents.observe(getViewLifecycleOwner(), spentCents -> {
             if (spentCents == null) return;
             tvSpent.setText(MoneyUtils.fromCentsDisplay(spentCents, currency));
@@ -109,11 +123,7 @@ public class CreateBudgetFragment extends Fragment {
 
         viewModel.aiResult.observe(getViewLifecycleOwner(), result -> {
             cardAiResult.setVisibility(View.VISIBLE);
-            if (result == null) {
-                tvAiRecommendation.setText(R.string.loading);
-            } else {
-                tvAiRecommendation.setText(result);
-            }
+            tvAiRecommendation.setText(result == null ? getString(R.string.loading) : result);
         });
 
         viewModel.toastMessage.observe(getViewLifecycleOwner(), message -> {
@@ -122,23 +132,66 @@ public class CreateBudgetFragment extends Fragment {
         });
     }
 
-    private void setupCategoryClicks() {
-        for (int i = 0; i < categoryIds.length; i++) {
-            final int catId = categoryIds[i];
-            categoryContainers[i].setOnClickListener(v -> {
-                selectedCategoryId = catId;
-                highlightCategory(catId);
-                cardAiResult.setVisibility(View.GONE);
-                viewModel.onCategorySelected(catId);
+    // ── ADDED: replaces setupCategoryClicks(), loads DB first ─────────────
+    private void loadCategoriesAndSetupClicks() {
+        AppDatabase db = AppDatabase.getDatabase(requireContext());
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            List<Category> allCategories = db.categoryDao().getAllCategories();
+
+            // Build map and an ordered list matching the XML view order
+            Map<Integer, Category> map = new HashMap<>();
+            for (Category c : allCategories) map.put(c.id, c);
+
+            // The XML grid has a fixed slot order — preserve it by sorting by id
+            // (insertion order matches seed order which matches DBConstants order)
+            List<Category> ordered = new ArrayList<>(allCategories);
+            ordered.sort(Comparator.comparingInt(a -> a.id));
+
+            if (!isAdded()) return;
+            requireActivity().runOnUiThread(() -> {
+                if (!isAdded()) return;
+                categoryMap = map;
+                setupCategoryClicks(ordered);
             });
-        }
+        });
+    }
+
+//    private void setupCategoryClicks(List<Category> ordered) {
+//        int count = Math.min(ordered.size(), categoryContainers.length);
+//        for (int i = 0; i < count; i++) {
+//            final Category cat = ordered.get(i);
+//            categoryContainers[i].setOnClickListener(v -> {
+//                selectedCategoryId = cat.id;
+//                highlightCategory(cat.id);
+//                cardAiResult.setVisibility(View.GONE);
+//                viewModel.onCategorySelected(cat.id);
+//            });
+//        }
+//    }
+
+    private void setupCategoryClicks(List<Category> ordered) {
+    int count = Math.min(ordered.size(), categoryContainers.length);
+    for (int i = 0; i < count; i++) {
+        final Category cat = ordered.get(i);
+        // ── ADDED: stamp the id onto the view so highlightCategory can read it ──
+        categoryContainers[i].setTag(R.id.tag_category_id, cat.id);
+        categoryContainers[i].setOnClickListener(v -> {
+            selectedCategoryId = cat.id;
+            highlightCategory(cat.id);
+            cardAiResult.setVisibility(View.GONE);
+            viewModel.onCategorySelected(cat.id);
+        });
+    }
     }
 
     private void highlightCategory(int categoryId) {
-        for (int i = 0; i < categoryIds.length; i++) {
-            categoryContainers[i].setBackgroundColor(
-                    categoryIds[i] == categoryId ? 0xFF4A7C7C : 0xFFF5F5F5
-            );
+        for (View container : categoryContainers) {
+            // tag each container with its category id to avoid index assumptions
+            Integer tagId = (Integer) container.getTag(R.id.tag_category_id);
+            boolean selected = tagId != null && tagId == categoryId;
+            container.setBackgroundColor(selected
+                    ? ColorUtils.TAB_ACTIVE_BG
+                    : 0xFFF5F5F5);
         }
     }
 }
