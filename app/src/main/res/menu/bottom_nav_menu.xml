@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
         android:id="@+id/nav_overview"
-        android:icon="@drawable/outline_change_circle_24"
+        android:icon="@drawable/ic_home_tab"
         android:title="@string/overview" />
-
     <item
         android:id="@+id/nav_budget"
-        android:icon="@drawable/outline_attach_money_24"
-        android:title="@string/create_budget" />
-
+        android:icon="@drawable/ic_budget"
+        android:title="@string/budget" />
     <item
         android:id="@+id/nav_settings"
-        android:icon="@drawable/baseline_app_settings_alt_24"
+        android:icon="@drawable/ic_settings_gear"
         android:title="@string/settings" />
-
 </menu>

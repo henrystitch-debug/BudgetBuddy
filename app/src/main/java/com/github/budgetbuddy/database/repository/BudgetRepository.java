@@ -2,6 +2,7 @@ package com.github.budgetbuddy.database.repository;
 
 import com.github.budgetbuddy.database.dao.BudgetDao;
 import com.github.budgetbuddy.database.entity.Budget;
+import com.github.budgetbuddy.utils.TimeUtils;
 
 import java.util.List;
 
@@ -9,6 +10,7 @@ import java.util.List;
  * Repository class for managing Budget data.
  */
 public class BudgetRepository {
+
     private final BudgetDao budgetDao;
 
     public BudgetRepository(BudgetDao budgetDao) {
@@ -47,15 +49,17 @@ public class BudgetRepository {
      * Returns all budgets that fall within the specified time range.
      */
     public List<Budget> getBudgetsInRange(long start, long end) {
-        return budgetDao.getBudgetsInInterval(start, end);
+        long startOfDay = TimeUtils.toStartOfDay(start);
+        long endOfDay  =  TimeUtils.toEndOfDay(end);
+        return budgetDao.getBudgetsInInterval(startOfDay, endOfDay);
     }
 
     /**
      * Increments the spent amount for a specific budget.
      * Useful when a new expense is added.
      */
-    public void addToSpentAmount(int budgetId, double amount) {
-        budgetDao.incrementCurrentAmount(budgetId, amount);
+    public void addToSpentAmount(int budgetId, long amountInCents) {
+        budgetDao.incrementCurrentAmount(budgetId, amountInCents);
     }
 
     /**
@@ -68,8 +72,21 @@ public class BudgetRepository {
     /**
      * Checks if the active budget is exceeded.
      */
-    public boolean isBudgetExceeded(long currentTimeMillis) {
-        Budget active = getActiveBudget(currentTimeMillis);
-        return active != null && active.current_amount > active.limit;
+    public boolean isActiveBudgetExceeded(long currentTimeMillis) {
+        long startOfDay = TimeUtils.toStartOfDay(currentTimeMillis);
+        Budget active = getActiveBudget(startOfDay);
+        return active != null && active.currentAmountInCents > active.limitInCents;
+    }
+
+    public Budget getBudgetForCategoryAndMonth(int categoryId, long start, long end) {
+        return budgetDao.getBudgetByCategoryAndInterval(categoryId, start, end);
+    }
+
+    public void updateBudget(int existingBudgetId, long limitInCents, long start, long end) {
+        this.budgetDao.updateBudget(existingBudgetId, limitInCents, start, end);
+    }
+
+    public long insertBudgetGetId(Budget newBudget) {
+        return budgetDao.insertBudget(newBudget);
     }
 }

@@ -8,9 +8,10 @@ public class Expense {
     @PrimaryKey(autoGenerate = true)
     public int id;
 
-    public double amount;
+    public long amountInCents;
     public int categoryId;
-    public long entryDate;
+    public long entryDateStartInMilliSec;
+
     public String note;
     public String repeat;
 }

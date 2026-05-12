@@ -2,6 +2,7 @@ package com.github.budgetbuddy.database;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
@@ -10,58 +11,66 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.github.budgetbuddy.database.dao.BudgetDao;
 import com.github.budgetbuddy.database.dao.CategoryDao;
 import com.github.budgetbuddy.database.dao.ExpenseDao;
-import com.github.budgetbuddy.database.dao.SettingsDao;
 import com.github.budgetbuddy.database.dao.StreakDao;
 import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Expense;
 import com.github.budgetbuddy.database.entity.Budget;
 import com.github.budgetbuddy.database.entity.Streak;
-import com.github.budgetbuddy.database.entity.Settings;
 
-    @Database(entities = {Expense.class, Category.class, Budget.class, Streak.class, Settings.class}, version = 2)
-    public abstract class AppDatabase extends RoomDatabase {
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-        public abstract ExpenseDao expenseDao();
-        public abstract CategoryDao categoryDao();
-        public abstract BudgetDao budgetDao();
-        public abstract StreakDao streakDao();
-        public abstract SettingsDao settingsDao();
+@Database(entities = {Expense.class, Category.class, Budget.class, Streak.class}, version = 3, exportSchema = false)
+public abstract class AppDatabase extends RoomDatabase {
 
-        private static volatile AppDatabase INSTANCE;
+    public abstract ExpenseDao expenseDao();
+    public abstract CategoryDao categoryDao();
+    public abstract BudgetDao budgetDao();
+    public abstract StreakDao streakDao();
 
-        public static AppDatabase getInstance(Context context) {
-            if (INSTANCE == null) {
-                synchronized (AppDatabase.class) {
-                    if (INSTANCE == null) {
-                        INSTANCE = Room.databaseBuilder(
-                                context.getApplicationContext(),
-                                AppDatabase.class,
-                                "budgetbuddy.db"
-                        ).addCallback(new RoomDatabase.Callback() {
-                            @Override
-                            public void onCreate(SupportSQLiteDatabase db) {
-                                super.onCreate(db);
-                                // Runs ONCE when the database is first created
-                                // Insert your default categories here with raw SQL
-                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Food', '🍔')");
-                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Transport', '🚗')");
-                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Shopping', '🛍️')");
-                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Health', '💊')");
-                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Entertainment', '🎬')");
-                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Housing', '🏠')");
-                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Travel', '✈️')");
-                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Education', '📚')");
-                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Sports', '⚽')");
-                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Utilities', '💡')");
-                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Pets', '🐾')");
-                                db.execSQL("INSERT INTO category (name, icon) VALUES ('Gifts', '🎁')");
-                            }
-                        }).fallbackToDestructiveMigration(true)
-                                .build();
-                    }
+    public static final ExecutorService databaseWriteExecutor = Executors
+                                                .newFixedThreadPool(4);
+
+    private static volatile AppDatabase INSTANCE;
+
+
+    public static AppDatabase getDatabase(final Context context) {
+        if (INSTANCE == null) {
+            synchronized (AppDatabase.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = Room.databaseBuilder(
+                            context.getApplicationContext(),
+                            AppDatabase.class,
+                            DBConstants.DATABASE_NAME
+                    )
+                    .fallbackToDestructiveMigration(true)
+                    .addCallback(new RoomDatabase.Callback() {
+                        @Override
+                        public void onCreate(@NonNull SupportSQLiteDatabase db) {
+                            super.onCreate(db);
+                            databaseWriteExecutor.execute(() -> {
+                                AppDatabase database = INSTANCE;
+
+                                CategoryDao categoryDao = database.categoryDao();
+                                 for (Object[] data : DBConstants.DEFAULT_CATEGORIES) {
+                                         Category cat = new Category();
+                                         cat.name  = (String) data[0];
+                                         cat.icon = (String) data[1];
+                                         cat.color = (String) data[2];
+                                         categoryDao.insertCategory(cat);
+                                 }
+                                StreakDao streakDao = database.streakDao();
+                                Streak streak = new Streak();
+                                streak.counter = 0;
+                                streak.last_updated = System.currentTimeMillis();
+                                streak.start_Date = System.currentTimeMillis();
+                                streakDao.insertNewStreak(streak);
+                            });
+                        }
+                    }).build();
                 }
             }
-            return INSTANCE;
         }
+        return INSTANCE;
     }
-
+}

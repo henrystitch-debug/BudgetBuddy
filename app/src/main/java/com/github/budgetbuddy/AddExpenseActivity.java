@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.budgetbuddy.adapters.CategoryAdapter;
 import com.github.budgetbuddy.database.entity.Category;
+import com.github.budgetbuddy.models.AddExpenseViewModel;
+import com.github.budgetbuddy.utils.MoneyUtils;
 
 public class AddExpenseActivity extends AppCompatActivity {
 
@@ -70,7 +72,7 @@ public class AddExpenseActivity extends AppCompatActivity {
                 return;
             }
 
-            double amount = Double.parseDouble(amountText);
+            long amount = MoneyUtils.toCents(amountText);
             viewModel.saveExpense(amount, selectedCategory.id, note);
             finish(); // go back to previous screen after saving
         });

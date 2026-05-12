@@ -1,53 +1,94 @@
 package com.github.budgetbuddy;
 
+import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.room.Room;
+import androidx.fragment.app.Fragment;
 
-import com.github.budgetbuddy.database.AppDatabase;
-import com.github.budgetbuddy.database.entity.Category;
-import com.github.budgetbuddy.database.entity.Expense;
+import com.github.budgetbuddy.ui.budget.CreateBudgetFragment;
+import com.github.budgetbuddy.ui.expense.AddExpenseFragment;
+import com.github.budgetbuddy.ui.onboarding.OnboardingActivity;
+import com.github.budgetbuddy.ui.overview.OverviewFragment;
+import com.github.budgetbuddy.ui.settings.SettingsFragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 
 public class MainActivity extends AppCompatActivity {
 
-    AppDatabase db;
-    //public static final String TAG = "MainActivity";
+    private OverviewFragment overviewFragment;
+    private CreateBudgetFragment budgetFragment;
+    private SettingsFragment settingsFragment;
+
+    SettingsManager settingsManager;
+    BottomNavigationView bottomNav;
+    FloatingActionButton fabAddExpense;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+
+        settingsManager = ((BudgetBuddyApp) getApplication()).getSettingsManager();
+
+        // first-launch
+        if (settingsManager.getUserName() == null) {
+            startActivity(new Intent(this, OnboardingActivity.class));
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
+        bottomNav = findViewById(R.id.bottom_navigation);
+        fabAddExpense = findViewById(R.id.fab_add_expense);
 
-        db = Room.databaseBuilder(
-                getApplicationContext(),
-                AppDatabase.class,
-                "budget_buddy_db"
-        ).allowMainThreadQueries().build();
+        // create fragments once
+        overviewFragment = new OverviewFragment();
+        budgetFragment = new CreateBudgetFragment();
+        settingsFragment = new SettingsFragment();
 
-        //Test to initialize tables
+        loadFragment(overviewFragment);
+        bottomNav.setSelectedItemId(R.id.nav_overview);
 
-        Category c = new Category();
-        c.name = "Food";
-        db.categoryDao().insertCategory(c);
-        Expense e = new Expense();
-        e.amount = 0;
-        e.categoryId = 1;
-        e.entryDate = System.currentTimeMillis();
-        e.note = "Test";
-        e.repeat = "NEVER";
-
-        db.expenseDao().insert(e);
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+        fabAddExpense.setOnClickListener(v -> {
+            loadFragment(AddExpenseFragment.newInstance(-1));
+            fabAddExpense.hide();
+            bottomNav.getMenu().setGroupCheckable(0, false, true);
         });
+
+        bottomNav.setOnItemSelectedListener(item -> {
+            Fragment selected;
+            int id = item.getItemId();
+            if (id == R.id.nav_overview) {
+                selected = overviewFragment;
+            } else if (id == R.id.nav_budget) {
+                selected = budgetFragment;
+            } else if (id == R.id.nav_settings) {
+                selected = settingsFragment;
+            } else {
+                return false;
+            }
+            bottomNav.getMenu().setGroupCheckable(0, true, true);
+            loadFragment(selected);
+            fabAddExpense.show();
+            return true;
+        });
+    }
+
+    public void loadFragment(Fragment fragment) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit();
+    }
+
+    public void navigateToOverview() {
+        bottomNav.setSelectedItemId(R.id.nav_overview);
+    }
+
+    public void showAddExpenseForEdit(int expenseId) {
+        loadFragment(AddExpenseFragment.newInstance(expenseId));
+        fabAddExpense.hide();
+        bottomNav.getMenu().setGroupCheckable(0, false, true);
     }
 }
