@@ -50,15 +50,6 @@ public abstract class AppDatabase extends RoomDatabase {
                             super.onCreate(db);
                             databaseWriteExecutor.execute(() -> {
                                 AppDatabase database = INSTANCE;
-
-                                CategoryDao categoryDao = database.categoryDao();
-                                 for (Object[] data : DBConstants.DEFAULT_CATEGORIES) {
-                                         Category cat = new Category();
-                                         cat.name  = (String) data[0];
-                                         cat.icon = (String) data[1];
-                                         cat.color = (String) data[2];
-                                         categoryDao.insertCategory(cat);
-                                 }
                                 StreakDao streakDao = database.streakDao();
                                 Streak streak = new Streak();
                                 streak.counter = 0;

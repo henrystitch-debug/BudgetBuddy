@@ -6,12 +6,16 @@ import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import com.github.budgetbuddy.R;
 import com.github.budgetbuddy.database.DBConstants;
+import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.ui.onboarding.OnboardingAdvancer;
 import com.github.budgetbuddy.ui.onboarding.OnboardingData;
 import com.google.android.material.chip.Chip;
@@ -25,6 +29,7 @@ public class CategoryFragment extends Fragment implements OnboardingAdvancer {
 
     private ChipGroup chipGroup;
     private final List<String> selectedCategories = new ArrayList<>();
+    private final List<Category> newCategories = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater i, ViewGroup c, Bundle b) {
@@ -56,19 +61,85 @@ public class CategoryFragment extends Fragment implements OnboardingAdvancer {
     }
 
     private void showAddDialog() {
-        EditText input = new EditText(requireContext());
-        input.setHint(R.string.cat_name);
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+
+        // Inflate custom dialog layout
+        View view = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_add_category, null);
+
+        EditText inputName = view.findViewById(R.id.inputCategoryName);
+        Spinner spinnerEmoji = view.findViewById(R.id.spinnerEmoji);
+        RadioGroup colorGroup = view.findViewById(R.id.colorGroup);
+
+        // Emoji options
+        String[] emojis = {"\uD83D\uDE4A", "\uD83C\uDF33", "\uD83C\uDF0F", "\uD83C\uDFBC",
+                "\uD83D\uDCBB", "\uD83D\uDD27", "⛵", "\uD83D\uDEB4", "\uD83C\uDF78", "\uD83D\uDC51"};
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                emojis
+        );
+
+        spinnerEmoji.setAdapter(adapter);
+
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.add_cat)
-                .setView(input)
+                .setView(view)
+
                 .setPositiveButton(R.string.add, (dialog, which) -> {
-                    String name = input.getText().toString().trim();
-                    if (!name.isEmpty() && !selectedCategories.contains(name)) {
-                        selectedCategories.add(name);
-                        addChip(name, true);
+
+                    String name = inputName.getText().toString().trim();
+
+                    if (name.isEmpty()) {
+                        return;
                     }
+
+                    // Prevent duplicates
+                    if (selectedCategories.contains(name)) {
+                        return;
+                    }
+
+                    // Selected emoji
+                    String emoji = spinnerEmoji.getSelectedItem().toString();
+
+                    // Selected color
+                    int checkedId = colorGroup.getCheckedRadioButtonId();
+
+                    String colorHex;
+
+                    if (checkedId == R.id.colorBlue) {
+                        colorHex = "#4A90E2";
+
+                    } else if (checkedId == R.id.colorGreen) {
+                        colorHex = "#50C878";
+
+                    } else if (checkedId == R.id.colorRed) {
+                        colorHex = "#E74C3C";
+
+                    } else if (checkedId == R.id.colorYellow) {
+                        colorHex = "#F4D03F";
+
+                    } else if (checkedId == R.id.colorPurple) {
+                        colorHex = "#9B59B6";
+
+                    } else if (checkedId == R.id.colorOrange) {
+                        colorHex = "#E67E22";
+
+                    } else if (checkedId == R.id.colorPink) {
+                        colorHex = "#FF6FAE";
+
+                    } else {
+                        colorHex = "#4A90E2";
+                    }
+
+                    // Create category object
+                    Category category = new Category (name, emoji, colorHex);
+
+                    newCategories.add(category);
+
+                    addChip(category.name, true);
                 })
+
                 .setNegativeButton(R.string.cancel, null)
                 .show();
     }
@@ -85,5 +156,6 @@ public class CategoryFragment extends Fragment implements OnboardingAdvancer {
     @Override
     public void save(OnboardingData data) {
         data.selectedCategories = new ArrayList<>(selectedCategories);
+        data.newCategories = new ArrayList<>(newCategories);
     }
 }

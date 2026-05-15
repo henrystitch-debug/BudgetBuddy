@@ -3,6 +3,8 @@
    <string name="settings">Settings</string>
    <string name="amount">Amount</string>
    <string name="category">Category</string>
+    <string name="choose_color">Choose a color, options "blue", "red", "green", "yellow", "purple", "orange"</string>
+    <string name="choose_icon">Choose an Icon like "🎩", "☂️", "🌳"</string>
    <string name="create_budget">Create Budget</string>
    <string name="current_balance">Current Balance</string>
    <string name="electricity">Electricity</string>
