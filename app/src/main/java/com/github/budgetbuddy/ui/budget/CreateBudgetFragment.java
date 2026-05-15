@@ -12,40 +12,27 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.budgetbuddy.R;
+import com.github.budgetbuddy.adapters.CategoryAdapter;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.models.CreateBudgetViewModel;
-import com.github.budgetbuddy.utils.ColorUtils;
 import com.github.budgetbuddy.utils.MoneyUtils;
+import androidx.recyclerview.widget.GridLayoutManager;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 
 public class CreateBudgetFragment extends Fragment {
 
-    private int selectedCategoryId = -1;
-
-    private View     cardBudgetInfo, cardAiResult, cardInput, btnAiRecommend, btnSaveBudget, labelSetBudget;
+    private View cardBudgetInfo, cardAiResult, cardInput, btnAiRecommend, btnSaveBudget, labelSetBudget;
     private TextView tvSelectedCategory, tvCurrentLimit, tvSpent, tvAiRecommendation;
     private EditText etBudgetAmount;
+    private RecyclerView categoryRecyclerView;
+    private CategoryAdapter categoryAdapter;
 
     private CreateBudgetViewModel viewModel;
-
-    // ── CHANGED: removed hardcoded categoryIds int[], categories come from DB ──
-    private Map<Integer, Category> categoryMap = new HashMap<>();
-
-    private final int[] categoryViews = {
-            R.id.cat_food, R.id.cat_home, R.id.cat_transport, R.id.cat_school,
-            R.id.cat_health, R.id.cat_shopping, R.id.cat_fun, R.id.cat_other,
-            R.id.cat_coffee, R.id.cat_travel, R.id.cat_gift, R.id.cat_pet
-    };
-    private View[] categoryContainers;
 
     @Nullable
     @Override
@@ -66,10 +53,8 @@ public class CreateBudgetFragment extends Fragment {
         btnAiRecommend.setOnClickListener(v -> viewModel.requestAiRecommendation());
         btnSaveBudget.setOnClickListener(v  ->
                 viewModel.saveBudget(etBudgetAmount.getText().toString().trim()));
-
-        // ── ADDED: load categories then wire up click listeners ────────────
-        loadCategoriesAndSetupClicks();
-        // ──────────────────────────────────────────────────────────────────
+        setupRecyclerView();
+        loadCategories();
     }
 
     private void bindViews(@NonNull View view) {
@@ -84,11 +69,7 @@ public class CreateBudgetFragment extends Fragment {
         tvSpent            = view.findViewById(R.id.tv_spent);
         tvAiRecommendation = view.findViewById(R.id.tv_ai_recommendation);
         etBudgetAmount     = view.findViewById(R.id.et_budget_amount);
-
-        categoryContainers = new View[categoryViews.length];
-        for (int i = 0; i < categoryViews.length; i++) {
-            categoryContainers[i] = view.findViewById(categoryViews[i]);
-        }
+        categoryRecyclerView = view.findViewById(R.id.categoryRecyclerView);
     }
 
     private void observeViewModel() {
@@ -101,11 +82,7 @@ public class CreateBudgetFragment extends Fragment {
             cardInput.setVisibility(View.VISIBLE);
             btnSaveBudget.setVisibility(View.VISIBLE);
 
-            // ── CHANGED: look up from map instead of CategoryUtils ─────────
-            Category cat = categoryMap.get(selectedCategoryId);
-            tvSelectedCategory.setText(cat != null
-                    ? cat.icon + "  " + cat.name
-                    : "");
+            tvSelectedCategory.setText("");
 
             if (budget != null && budget.limitInCents > 0) {
                 tvCurrentLimit.setText(MoneyUtils.fromCentsDisplay(budget.limitInCents, currency));
@@ -132,66 +109,44 @@ public class CreateBudgetFragment extends Fragment {
         });
     }
 
-    // ── ADDED: replaces setupCategoryClicks(), loads DB first ─────────────
-    private void loadCategoriesAndSetupClicks() {
-        AppDatabase db = AppDatabase.getDatabase(requireContext());
+    private void setupRecyclerView() {
+
+        categoryAdapter = new CategoryAdapter(category -> {
+
+            selectedCategoryId = category.id;
+
+            cardAiResult.setVisibility(View.GONE);
+
+            tvSelectedCategory.setText(
+                    category.icon + "  " + category.name
+            );
+
+            viewModel.onCategorySelected(category.id);
+        });
+
+        categoryRecyclerView.setLayoutManager(
+                new GridLayoutManager(requireContext(), 3)
+        );
+
+        categoryRecyclerView.setAdapter(categoryAdapter);
+    }
+
+    private void loadCategories() {
+
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            List<Category> allCategories = db.categoryDao().getAllCategories();
 
-            // Build map and an ordered list matching the XML view order
-            Map<Integer, Category> map = new HashMap<>();
-            for (Category c : allCategories) map.put(c.id, c);
-
-            // The XML grid has a fixed slot order — preserve it by sorting by id
-            // (insertion order matches seed order which matches DBConstants order)
-            List<Category> ordered = new ArrayList<>(allCategories);
-            ordered.sort(Comparator.comparingInt(a -> a.id));
+            List<Category> categories =
+                    AppDatabase
+                            .getDatabase(requireContext())
+                            .categoryDao()
+                            .getAllCategories();
 
             if (!isAdded()) return;
+
             requireActivity().runOnUiThread(() -> {
-                if (!isAdded()) return;
-                categoryMap = map;
-                setupCategoryClicks(ordered);
+
+                categoryAdapter.setCategories(categories);
             });
         });
-    }
-
-//    private void setupCategoryClicks(List<Category> ordered) {
-//        int count = Math.min(ordered.size(), categoryContainers.length);
-//        for (int i = 0; i < count; i++) {
-//            final Category cat = ordered.get(i);
-//            categoryContainers[i].setOnClickListener(v -> {
-//                selectedCategoryId = cat.id;
-//                highlightCategory(cat.id);
-//                cardAiResult.setVisibility(View.GONE);
-//                viewModel.onCategorySelected(cat.id);
-//            });
-//        }
-//    }
-
-    private void setupCategoryClicks(List<Category> ordered) {
-    int count = Math.min(ordered.size(), categoryContainers.length);
-    for (int i = 0; i < count; i++) {
-        final Category cat = ordered.get(i);
-        // ── ADDED: stamp the id onto the view so highlightCategory can read it ──
-        categoryContainers[i].setTag(R.id.tag_category_id, cat.id);
-        categoryContainers[i].setOnClickListener(v -> {
-            selectedCategoryId = cat.id;
-            highlightCategory(cat.id);
-            cardAiResult.setVisibility(View.GONE);
-            viewModel.onCategorySelected(cat.id);
-        });
-    }
-    }
-
-    private void highlightCategory(int categoryId) {
-        for (View container : categoryContainers) {
-            // tag each container with its category id to avoid index assumptions
-            Integer tagId = (Integer) container.getTag(R.id.tag_category_id);
-            boolean selected = tagId != null && tagId == categoryId;
-            container.setBackgroundColor(selected
-                    ? ColorUtils.TAB_ACTIVE_BG
-                    : 0xFFF5F5F5);
-        }
     }
 }

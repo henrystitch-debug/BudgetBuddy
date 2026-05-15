@@ -2,7 +2,6 @@ package com.github.budgetbuddy.ui.onboarding.fragments;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -101,7 +100,7 @@ public class CategoryFragment extends Fragment implements OnboardingAdvancer {
 
                     // Selected emoji
                     String emoji = spinnerEmoji.getSelectedItem().toString();
-
+                    //TODO: no choosing color! new one gets automatically assigned
                     // Selected color
                     int checkedId = colorGroup.getCheckedRadioButtonId();
 

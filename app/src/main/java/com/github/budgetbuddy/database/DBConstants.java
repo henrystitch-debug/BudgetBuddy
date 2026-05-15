@@ -27,7 +27,6 @@ public final class DBConstants {
     { "School",    "📚", "#9C6EBA" },
     { "Health",    "❤️", "#E05252" },
     { "Shopping",  "🛍️", "#3BAE8A" },
-    { "Other",     "···","#9E9E9E" },
     { "Home",      "🏠", "#5C85D6" },
     { "Transport", "🚌", "#E8A838" },
 };
