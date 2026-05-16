@@ -26,6 +26,7 @@ import java.util.List;
 
 public class CreateBudgetFragment extends Fragment {
 
+    private int selectedCategoryId = -1;
     private View cardBudgetInfo, cardAiResult, cardInput, btnAiRecommend, btnSaveBudget, labelSetBudget;
     private TextView tvSelectedCategory, tvCurrentLimit, tvSpent, tvAiRecommendation;
     private EditText etBudgetAmount;

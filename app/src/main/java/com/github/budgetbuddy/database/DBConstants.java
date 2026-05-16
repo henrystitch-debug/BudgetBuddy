@@ -8,17 +8,6 @@ public final class DBConstants {
     public static final int INVALID = -1;
     public static final String DATABASE_NAME = "budget_buddy_database";
 
-    public static final String FOOD_CATEGORY = "Food";
-    public static final String HOME_CATEGORY = "Home";
-    public static final String TRANSPORT_CATEGORY = "Transport";
-    public static final String SCHOOL_CATEGORY = "School";
-    public static final String HEALTH_CATEGORY = "Health";
-    public static final String SHOPPING_CATEGORY = "Shopping";
-    public static final String FUN_CATEGORY = "Fun";
-    public static final String TRAVEL_CATEGORY = "Travel";
-    public static final String PET_CATEGORY = "Pet";
-    public static final String OTHER_CATEGORY = "Other";
-
     public static final Object[][] DEFAULT_CATEGORIES = {
     { "Food",      "🍴", "#4A7C7C" },
     { "Fun",       "⭐", "#F08040" },

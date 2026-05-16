@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Create Budget"
+            android:text="@string/create_budget"
             android:textSize="26sp"
             android:textStyle="bold"
             android:textColor="#1A1A1A"
@@ -25,7 +25,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Select Category"
+            android:text="@string/select_category"
             android:textSize="15sp"
             android:textStyle="bold"
             android:textColor="#1A1A1A"
@@ -59,7 +59,7 @@
                     android:id="@+id/tv_selected_category"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Food"
+                    android:text="@string/food"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#1A1A1A"
@@ -70,7 +70,7 @@
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Current Budget" android:textSize="12sp" android:textColor="#888888"/>
                         <TextView android:id="@+id/tv_current_limit" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Not set" android:textSize="18sp" android:textStyle="bold" android:textColor="#4A7C7C" android:layout_marginTop="2dp"/>
+                            android:text="@string/not_set" android:textSize="18sp" android:textStyle="bold" android:textColor="#4A7C7C" android:layout_marginTop="2dp"/>
                     </LinearLayout>
 
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
@@ -88,7 +88,7 @@
             android:id="@+id/btn_ai_recommend"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:text="🤖  Get AI Recommendation"
+            android:text="@string/get_ai_recommendation"
             android:textColor="#FFFFFF"
             android:backgroundTint="#4A7C7C"
             android:layout_marginBottom="12dp"
@@ -114,7 +114,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🤖 AI Recommendation"
+                    android:text="@string/get_ai_recommendation"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     android:textColor="#4A7C7C"
@@ -136,7 +136,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Set Budget Amount"
+            android:text="@string/set_budget_amount"
             android:textSize="15sp"
             android:textStyle="bold"
             android:textColor="#1A1A1A"
@@ -164,7 +164,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="€"
+                    android:text="@string/euro"
                     android:textSize="24sp"
                     android:textColor="#B8860B"
                     android:layout_marginEnd="8dp" />
@@ -188,7 +188,7 @@
             android:id="@+id/btn_save_budget"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Save Budget"
+            android:text="@string/save_budget"
             android:textColor="#FFFFFF"
             android:backgroundTint="#1A1A1A"
             android:visibility="gone" />

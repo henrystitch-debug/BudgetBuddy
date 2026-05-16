@@ -32,7 +32,7 @@ android:background="#F5F9F8">
         android:id="@+id/btn_next"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:text="Continue"
+        android:text="@string/continuee"
         android:textColor="#FFFFFF"
         android:backgroundTint="#4A7C7C" />
 

@@ -28,9 +28,28 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
         this.listener = listener;
     }
 
+    public List<Category> getCategories() {
+        return categories;
+    }
+
     // Call this to load/update the list of categories
     public void setCategories(List<Category> categories) {
         this.categories = categories;
+        notifyDataSetChanged();
+    }
+
+    public void setSelectedCategoryId(int categoryId) {
+        for (int i = 0; i < categories.size(); i++) {
+            if (categories.get(i).id == categoryId) {
+                selectedPosition = i;
+                notifyDataSetChanged();
+                break;
+            }
+        }
+    }
+
+    public void setSelectedPosition(int position) {
+        selectedPosition = position;
         notifyDataSetChanged();
     }
 

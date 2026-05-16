@@ -25,6 +25,9 @@
         <activity
             android:name=".ui.onboarding.OnboardingActivity"
             android:exported="false" />
+        <activity
+            android:name=".AddExpenseActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
