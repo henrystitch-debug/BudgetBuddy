@@ -24,6 +24,7 @@
     <string name="enter_amount">Enter Amount</string>
     <string name="entertainment">Entertainment</string>
     <string name="euro">€</string>
+    <string name="eur_symbol">€</string>
     <string name="exp_saved">Expense Saved!</string>
     <string name="expenses">Expenses</string>
     <string name="fire">🔥</string>
@@ -35,7 +36,7 @@
     <string name="income">Income</string>
     <string name="invalid_amount_prompt">Please enter a valid amount</string>
     <string name="last_2wks">Last 2 Weeks</string>
-    <string name="letsgo">let's go!</string>
+    <string name="letsgo">let\'s go!</string>
     <string name="loading">Loading</string>
     <string name="log_xpense">Log an expense to start your streak.</string>
     <string name="my_finances">My Finances</string>
@@ -60,5 +61,6 @@
     <string name="total_spent">Total Spent</string>
     <string name="transport">Transport</string>
     <string name="val_not_set">Not set</string>
+    <string name="yen_symbol">¥</string>
     <string name="you_stayed_in_budget">You stayed in budget within 3 months in a row!</string>
 </resources>

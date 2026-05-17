@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -67,7 +66,6 @@ public class CategoryFragment extends Fragment implements OnboardingAdvancer {
 
         EditText inputName = view.findViewById(R.id.inputCategoryName);
         Spinner spinnerEmoji = view.findViewById(R.id.spinnerEmoji);
-        RadioGroup colorGroup = view.findViewById(R.id.colorGroup);
 
         // Emoji options
         String[] emojis = {"\uD83D\uDE4A", "\uD83C\uDF33", "\uD83C\uDF0F", "\uD83C\uDFBC",
@@ -98,37 +96,19 @@ public class CategoryFragment extends Fragment implements OnboardingAdvancer {
                         return;
                     }
 
+                    if((selectedCategories.toArray().length + newCategories.toArray().length) >= 12){
+                        return;
+                    }
+
                     // Selected emoji
                     String emoji = spinnerEmoji.getSelectedItem().toString();
-                    //TODO: no choosing color! new one gets automatically assigned
-                    // Selected color
-                    int checkedId = colorGroup.getCheckedRadioButtonId();
+                    String colorHex = "";
 
-                    String colorHex;
-
-                    if (checkedId == R.id.colorBlue) {
-                        colorHex = "#4A90E2";
-
-                    } else if (checkedId == R.id.colorGreen) {
-                        colorHex = "#50C878";
-
-                    } else if (checkedId == R.id.colorRed) {
-                        colorHex = "#E74C3C";
-
-                    } else if (checkedId == R.id.colorYellow) {
-                        colorHex = "#F4D03F";
-
-                    } else if (checkedId == R.id.colorPurple) {
-                        colorHex = "#9B59B6";
-
-                    } else if (checkedId == R.id.colorOrange) {
-                        colorHex = "#E67E22";
-
-                    } else if (checkedId == R.id.colorPink) {
-                        colorHex = "#FF6FAE";
-
-                    } else {
-                        colorHex = "#4A90E2";
+                    //Assign colors
+                    for(int i = 0; i < 16; i++){
+                        if( i == newCategories.toArray().length){
+                            colorHex = DBConstants.HEX_COLORS[i];
+                        }
                     }
 
                     // Create category object

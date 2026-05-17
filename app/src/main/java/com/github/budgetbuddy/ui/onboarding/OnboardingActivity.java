@@ -33,6 +33,7 @@ public class OnboardingActivity extends AppCompatActivity {
 
     public final OnboardingData data = new OnboardingData();
     public List<Category> finalCategories = new ArrayList<>();
+    public List<Category> defaultCategories = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,18 +91,25 @@ public class OnboardingActivity extends AppCompatActivity {
                 Category cat = new Category();
                 cat.name  = (String) data[0];
                 cat.icon = (String) data[1];
-                cat.color = (String) data[2];
-                finalCategories.add(cat);
+                cat.color = "";
+                defaultCategories.add(cat);
             }
 
-
             // remove unselected categories
-            for (Category cat : new ArrayList<>(finalCategories)) {
+            for (Category cat : new ArrayList<>(defaultCategories)) {
                 if (!data.selectedCategories.contains(cat.name)) {
-                    finalCategories.remove(cat);
+                    defaultCategories.remove(cat);
                 }
             }
 
+            // insert selected categories
+            int startColor = data.newCategories.toArray().length;
+            int rounds = 0;
+            for(Category cat : defaultCategories){
+                cat.color = DBConstants.HEX_COLORS[startColor + rounds];
+                finalCategories.add(cat);
+                rounds++;
+            }
             // insert new custom categories
                finalCategories.addAll(data.newCategories);
             AppDatabase.databaseWriteExecutor.execute(() -> {
