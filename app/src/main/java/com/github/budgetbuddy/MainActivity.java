@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.github.budgetbuddy.ui.budget.CreateBudgetFragment;
-import com.github.budgetbuddy.ui.expense.AddExpenseFragment;
 import com.github.budgetbuddy.ui.onboarding.OnboardingActivity;
 import com.github.budgetbuddy.ui.overview.OverviewFragment;
 import com.github.budgetbuddy.ui.settings.SettingsFragment;
@@ -51,9 +50,8 @@ public class MainActivity extends AppCompatActivity {
         bottomNav.setSelectedItemId(R.id.nav_overview);
 
         fabAddExpense.setOnClickListener(v -> {
-            loadFragment(AddExpenseFragment.newInstance(-1));
-            fabAddExpense.hide();
-            bottomNav.getMenu().setGroupCheckable(0, false, true);
+            Intent intent = new Intent(this, AddExpenseActivity.class);
+            startActivity(intent);
         });
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -87,7 +85,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showAddExpenseForEdit(int expenseId) {
-        loadFragment(AddExpenseFragment.newInstance(expenseId));
+        Intent intent = new Intent(this, AddExpenseActivity.class);
+        intent.putExtra("expenseId", expenseId);
+
+        startActivity(intent);
+
         fabAddExpense.hide();
         bottomNav.getMenu().setGroupCheckable(0, false, true);
     }

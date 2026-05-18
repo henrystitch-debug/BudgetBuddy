@@ -130,7 +130,7 @@ public class CreateBudgetViewModel extends AndroidViewModel {
             return;
         }
         if (amountStr == null || amountStr.trim().isEmpty()) {
-            String s = getStringFromResource(R.string.empty_cat_prompt);
+            String s = getStringFromResource(R.string.invalid_amount_prompt);
             _toastMessage.postValue(s);
             return;
         }

@@ -19,7 +19,9 @@ import com.github.budgetbuddy.SettingsManager;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.dao.CategoryDao;
 import com.github.budgetbuddy.database.entity.Category;
+import com.github.budgetbuddy.database.DBConstants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class OnboardingActivity extends AppCompatActivity {
@@ -30,6 +32,8 @@ public class OnboardingActivity extends AppCompatActivity {
     private OnboardingPagerAdapter adapter;
 
     public final OnboardingData data = new OnboardingData();
+    public List<Category> finalCategories = new ArrayList<>();
+    public List<Category> defaultCategories = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,14 +87,37 @@ public class OnboardingActivity extends AppCompatActivity {
 
         // persist selected categories to DB
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            CategoryDao dao = AppDatabase.getDatabase(this).categoryDao();
-            // remove unselected defaults, keep selected + any customs already inserted
-            List<Category> all = dao.getAllCategories();
-            for (Category cat : all) {
+            for (Object[] data : DBConstants.DEFAULT_CATEGORIES) {
+                Category cat = new Category();
+                cat.name  = (String) data[0];
+                cat.icon = (String) data[1];
+                cat.color = "";
+                defaultCategories.add(cat);
+            }
+
+            // remove unselected categories
+            for (Category cat : new ArrayList<>(defaultCategories)) {
                 if (!data.selectedCategories.contains(cat.name)) {
-                    dao.deleteCategory(cat);
+                    defaultCategories.remove(cat);
                 }
             }
+
+            // insert selected categories
+            int startColor = data.newCategories.toArray().length;
+            int rounds = 0;
+            for(Category cat : defaultCategories){
+                cat.color = DBConstants.HEX_COLORS[startColor + rounds];
+                finalCategories.add(cat);
+                rounds++;
+            }
+            // insert new custom categories
+               finalCategories.addAll(data.newCategories);
+            AppDatabase.databaseWriteExecutor.execute(() -> {
+                CategoryDao dao = AppDatabase.getDatabase(this).categoryDao();
+                for(Category cat : finalCategories) {
+                    dao.insertCategory(cat);
+                }
+            });
         });
 
         Toast.makeText(this, "Hi " + data.name + "! 👋", Toast.LENGTH_SHORT).show();
