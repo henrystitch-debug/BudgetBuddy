@@ -6,6 +6,10 @@ import androidx.room.PrimaryKey;
 
 @Entity(tableName = "category")
 public class Category {
+    public static final int DEFAULT_CATEGORY = 69;
+    public static final String DEFAULT_NAME = "default";
+    public static final String DEFAULT_ICON = ":)";
+
     @PrimaryKey(autoGenerate = true)
     public int id;
     public String name;
@@ -20,5 +24,4 @@ public class Category {
 
     public Category() {
     }
-    // public Boolean selected;
 }

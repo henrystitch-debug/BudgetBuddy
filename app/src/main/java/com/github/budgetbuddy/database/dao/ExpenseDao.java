@@ -41,8 +41,17 @@ public interface ExpenseDao {
     @Query("UPDATE expense SET amountInCents = :amount, categoryId = :categoryId, entryDateStartInMilliSec = :entryDateStartInMilliSec, note = :note, repeat = :repeat WHERE id = :id")
     void updateExpense(int id, long amount, int categoryId, long entryDateStartInMilliSec, String note, String repeat);
 
+    @Query("SELECT SUM(amountInCents) FROM expense WHERE budgetId = :budgetId " +
+            "AND entryDateStartInMilliSec BETWEEN :start AND :end")
+    Long getTotalSpentForBudget(int budgetId, long start, long end);
+
     @Delete
     void deleteExpense(Expense expense);
+
+    class BudgetSpending {
+        public int budgetId;
+        public long totalInCents;
+    }
 
     class CategorySpending {
         public int categoryId;

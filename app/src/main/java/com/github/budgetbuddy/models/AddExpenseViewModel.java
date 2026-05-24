@@ -9,6 +9,7 @@ import androidx.lifecycle.LiveData;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Expense;
+import com.github.budgetbuddy.database.repository.BudgetRepository;
 import com.github.budgetbuddy.database.repository.CategoryRepository;
 import com.github.budgetbuddy.database.repository.ExpenseRepository;
 import com.github.budgetbuddy.utils.TimeUtils;
@@ -18,6 +19,8 @@ import java.util.List;
 public class AddExpenseViewModel extends AndroidViewModel {
     private final CategoryRepository categoryRepository;
     private final ExpenseRepository expenseRepository;
+    private final BudgetRepository budgetRepository;
+
     private final LiveData<List<Category>> categories;
 
     public AddExpenseViewModel(Application application) {
@@ -25,6 +28,7 @@ public class AddExpenseViewModel extends AndroidViewModel {
         AppDatabase db = AppDatabase.getDatabase(application);
         categoryRepository = new CategoryRepository(db.categoryDao());
         expenseRepository = new ExpenseRepository(db.expenseDao());
+        budgetRepository = new BudgetRepository(db.budgetDao());
         categories = categoryRepository.getAllCategories();
     }
 

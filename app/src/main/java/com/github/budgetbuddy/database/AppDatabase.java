@@ -48,6 +48,10 @@ public abstract class AppDatabase extends RoomDatabase {
                         @Override
                         public void onCreate(@NonNull SupportSQLiteDatabase db) {
                             super.onCreate(db);
+                            // this default value must exist otherwise we cannot delete categories
+                            // from the table
+                            db.execSQL("INSERT INTO category (id, name, icon, color) " +
+                                    "VALUES (69, 'default', ':)', '')");
                             databaseWriteExecutor.execute(() -> {
                                 AppDatabase database = INSTANCE;
                                 StreakDao streakDao = database.streakDao();

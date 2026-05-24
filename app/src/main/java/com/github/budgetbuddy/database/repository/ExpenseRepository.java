@@ -1,8 +1,5 @@
 package com.github.budgetbuddy.database.repository;
 
-import android.app.Application;
-
-import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.dao.ExpenseDao;
 import com.github.budgetbuddy.database.entity.Expense;
 import com.github.budgetbuddy.utils.TimeUtils;
@@ -69,5 +66,10 @@ public class ExpenseRepository {
 
     public long getTotalSpentForCategoryAndInterval(int categoryId, long start, long end) {
         return Long.MIN_VALUE; // TODO fix this
+    }
+
+    public long getTotalSpentForBudget(int budgetId, long startDate, long endDate) {
+        Long result = expenseDao.getTotalSpentForBudget(budgetId, startDate, endDate);
+        return result != null ? result : 0L;
     }
 }

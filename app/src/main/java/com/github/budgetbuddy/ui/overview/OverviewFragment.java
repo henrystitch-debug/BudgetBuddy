@@ -20,6 +20,7 @@ import com.github.budgetbuddy.MainActivity;
 import com.github.budgetbuddy.R;
 import com.github.budgetbuddy.SettingsManager;
 import com.github.budgetbuddy.database.AppDatabase;
+import com.github.budgetbuddy.database.DBConstants;
 import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Expense;
 import com.github.budgetbuddy.database.entity.Streak;
@@ -39,7 +40,7 @@ public class OverviewFragment extends Fragment {
 
     private long currentStartDate;
     private long currentEndDate;
-    private String currentCurrency = "€";
+    private String currentCurrency = DBConstants.DEFAULT_CURRENCY;
 
     private TextView tvGreeting, tvSubtitle;
     private TextView tvMonth, tabThisMonth, tabLastMonth, tabTwoWeeks;
@@ -62,6 +63,12 @@ public class OverviewFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_overview, container, false);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadDetailData();
     }
 
     @Override
@@ -168,6 +175,8 @@ public class OverviewFragment extends Fragment {
 
     private void loadDetailData() {
         AppDatabase db = AppDatabase.getDatabase(requireContext());
+        SettingsManager sm = new SettingsManager(requireActivity().getApplication());
+        currentCurrency = sm.getCurrency();
         long startDate  = currentStartDate;
         long endDate    = currentEndDate;
 
@@ -332,7 +341,7 @@ public class OverviewFragment extends Fragment {
 
         if (rows.isEmpty()) {
             TextView empty = new TextView(getContext());
-            empty.setText("No budgets set for this period.");
+            empty.setText(R.string.no_budgets_set_for_this_period);
             empty.setTextSize(13f);
             empty.setTextColor(Color.parseColor("#888888"));
             budgetProgressContainer.addView(empty);
@@ -347,11 +356,10 @@ public class OverviewFragment extends Fragment {
             addCategoryProgressRow(categoryId, limit, spentInCents, idx > 0);
         }
     }
-    // ────────────────────────────────────────────────────────────────────────
 
     private void addCategoryProgressRow(int categoryId, int limit, Long spent, boolean addTopMargin) {
         boolean exceeded   = spent > limit;
-        int     pct        = limit > 0 ? (int) ((spent / limit) * 100) : 0;
+        int     pct        = limit > 0 ? (int) ((spent  * 100L) / limit) : 0;
         int     displayPct = Math.min(pct, 100);
 
         // ── CHANGED: look up Category from map instead of CategoryUtils ────
