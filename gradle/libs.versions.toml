@@ -19,6 +19,7 @@ okhttp = "4.12.0"
 gemini-flash = "1.53.0"
 
 [libraries]
+core-testing = { module = "androidx.arch.core:core-testing" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

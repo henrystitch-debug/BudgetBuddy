@@ -20,7 +20,7 @@ import com.github.budgetbuddy.database.entity.Streak;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Expense.class, Category.class, Budget.class, Streak.class}, version = 3, exportSchema = false)
+@Database(entities = {Expense.class, Category.class, Budget.class, Streak.class}, version = 4, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ExpenseDao expenseDao();

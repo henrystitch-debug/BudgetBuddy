@@ -82,11 +82,12 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.core.testing)
     annotationProcessor(libs.room.compiler)
 
     // Optional but highly recommended: mock objects
     testImplementation(libs.mockito.core)
-    testImplementation(libs.mockito.inline) // mock final classes
+    testImplementation(libs.mockito.inline)
 
     // ── Instrumented Testing ──────────────────────────────────
     androidTestImplementation(libs.runner)

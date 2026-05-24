@@ -22,6 +22,11 @@ public interface ExpenseDao {
     @Query("SELECT * FROM expense WHERE entryDateStartInMilliSec >= :startDate and entryDateStartInMilliSec <= :endDate")
     List<Expense> getExpensesInterval(long startDate, long endDate);
 
+
+     @Query("SELECT * FROM expense WHERE entryDateStartInMilliSec >= :startDate and entryDateStartInMilliSec <= :endDate" +
+             " LIMIT :limit")
+    List<Expense> getExpensesIntervalUnderLimit(long startDate, long endDate, int limit);
+
     @Query("SELECT * FROM expense WHERE categoryId = :categoryId")
     List<Expense> getExpensesByCategory(int categoryId);
 
@@ -38,10 +43,13 @@ public interface ExpenseDao {
     @Query("SELECT entryDateStartInMilliSec as date, SUM(amountInCents) as totalInCents FROM expense WHERE entryDateStartInMilliSec >= :startDate AND entryDateStartInMilliSec <= :endDate GROUP BY entryDateStartInMilliSec")
     List<DailySpending> getDailySpending(long startDate, long endDate);
 
-    @Query("UPDATE expense SET amountInCents = :amount, categoryId = :categoryId, entryDateStartInMilliSec = :entryDateStartInMilliSec, note = :note, repeat = :repeat WHERE id = :id")
-    void updateExpense(int id, long amount, int categoryId, long entryDateStartInMilliSec, String note, String repeat);
+    @Query("UPDATE expense SET amountInCents = :amount, categoryId = :categoryId, " +
+            "entryDateStartInMilliSec = :entryDateStartInMilliSec, note = :note, repeat = :repeat," +
+            " budget_id = :budgetId WHERE id = :id")
+    void updateExpense(int id, long amount, int categoryId, long entryDateStartInMilliSec, String note, String repeat,
+                       int budgetId);
 
-    @Query("SELECT SUM(amountInCents) FROM expense WHERE budgetId = :budgetId " +
+    @Query("SELECT SUM(amountInCents) FROM expense WHERE budget_id = :budgetId " +
             "AND entryDateStartInMilliSec BETWEEN :start AND :end")
     Long getTotalSpentForBudget(int budgetId, long start, long end);
 
