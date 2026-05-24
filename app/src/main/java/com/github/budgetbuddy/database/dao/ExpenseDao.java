@@ -24,7 +24,7 @@ public interface ExpenseDao {
 
 
      @Query("SELECT * FROM expense WHERE entryDateStartInMilliSec >= :startDate and entryDateStartInMilliSec <= :endDate" +
-             " LIMIT :limit")
+             " ORDER BY entryDateStartInMilliSec DESC LIMIT :limit")
     List<Expense> getExpensesIntervalUnderLimit(long startDate, long endDate, int limit);
 
     @Query("SELECT * FROM expense WHERE categoryId = :categoryId")
@@ -47,7 +47,7 @@ public interface ExpenseDao {
             "entryDateStartInMilliSec = :entryDateStartInMilliSec, note = :note, repeat = :repeat," +
             " budget_id = :budgetId WHERE id = :id")
     void updateExpense(int id, long amount, int categoryId, long entryDateStartInMilliSec, String note, String repeat,
-                       int budgetId);
+                       Integer budgetId);
 
     @Query("SELECT SUM(amountInCents) FROM expense WHERE budget_id = :budgetId " +
             "AND entryDateStartInMilliSec BETWEEN :start AND :end")

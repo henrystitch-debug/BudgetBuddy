@@ -35,7 +35,7 @@ public class ExpenseRepository {
      * Updates an existing expense. {@code entryDate} is normalized to start-of-day millis.
      */
     public void updateExpense(int id, long amountInCents, int categoryId, long entryDate,
-                              String note, String repeat, int budgetId) {
+                              String note, String repeat, Integer budgetId) {
         expenseDao.updateExpense(id, amountInCents, categoryId, TimeUtils.toStartOfDay(entryDate),
                 note, repeat, budgetId);
     }

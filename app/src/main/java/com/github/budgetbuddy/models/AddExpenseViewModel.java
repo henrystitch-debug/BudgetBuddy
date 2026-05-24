@@ -7,7 +7,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.github.budgetbuddy.database.AppDatabase;
-import com.github.budgetbuddy.database.DBConstants;
 import com.github.budgetbuddy.database.entity.Budget;
 import com.github.budgetbuddy.database.entity.Category;
 import com.github.budgetbuddy.database.entity.Expense;
@@ -56,7 +55,7 @@ public class AddExpenseViewModel extends AndroidViewModel {
      */
     public void saveExpense(long amountInCents, int categoryId, String note) {
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            int budgetId = resolveActiveBudgetId(categoryId);
+            Integer budgetId = resolveActiveBudgetId(categoryId);
 
             Expense expense = new Expense();
             expense.amountInCents           = amountInCents;
@@ -81,7 +80,7 @@ public class AddExpenseViewModel extends AndroidViewModel {
                               int categoryId,
                               String note) {
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            int budgetId = resolveActiveBudgetId(categoryId);
+            Integer budgetId = resolveActiveBudgetId(categoryId);
 
             expenseRepository.updateExpense(
                     expenseId,
@@ -102,10 +101,10 @@ public class AddExpenseViewModel extends AndroidViewModel {
      *
      * Must be called from a background thread.
      */
-    private int resolveActiveBudgetId(int categoryId) {
+    private Integer resolveActiveBudgetId(int categoryId) {
         long start  = TimeUtils.getStartOfMonth(0);
         long end    = TimeUtils.getEndOfMonth(0);
         Budget budget = budgetRepository.getBudgetForCategoryAndMonth(categoryId, start, end);
-        return budget != null ? budget.id : DBConstants.INVALID;
+        return budget == null ? null : budget.id;
     }
 }
