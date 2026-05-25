@@ -51,7 +51,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             // this default value must exist otherwise we cannot delete categories
                             // from the table
                             db.execSQL("INSERT INTO category (id, name, icon, color) " +
-                                    "VALUES (69, 'default', ':)', '')");
+                                    "VALUES (69, 'default', ':)', '#9E9E9E')");
                             databaseWriteExecutor.execute(() -> {
                                 AppDatabase database = INSTANCE;
                                 StreakDao streakDao = database.streakDao();
