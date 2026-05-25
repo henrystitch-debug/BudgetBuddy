@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FAFAFA"
+    android:id="@+id/main">
+
+    <!-- Top bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="24dp"
+            android:text="@string/add_expense"
+            android:textColor="#1A1A1A"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/cancelButton"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/cancel"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+    <!-- Scrollable content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingHorizontal="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Amount input -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/amount"
+                android:textSize="14sp"
+                android:textColor="#888888"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/amountInput"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@drawable/input_background"
+                android:paddingHorizontal="16dp"
+                android:inputType="numberDecimal"
+                android:hint="@string/number"
+                android:textSize="18sp"
+                android:textColor="#1A1A1A"
+                android:textColorHint="#CCCCCC"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Category label -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/category"
+                android:textSize="14sp"
+                android:textColor="#888888"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Category grid -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/categoryGrid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Note input -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_note"
+                android:textSize="14sp"
+                android:textColor="#888888"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/noteInput"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:background="@drawable/input_background"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="12dp"
+                android:inputType="textMultiLine"
+                android:gravity="top"
+                android:hint="@string/add_note"
+                android:textSize="15sp"
+                android:textColor="#1A1A1A"
+                android:textColorHint="#CCCCCC"
+                android:layout_marginBottom="24dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Save button pinned to bottom -->
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_margin="20dp"
+        android:background="@drawable/button_background"
+        android:text="@string/save_expense"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+</LinearLayout>
