@@ -48,7 +48,7 @@ public class BudgetRepository {
     /**
      * Returns all budgets that fall within the specified time range.
      */
-    public List<Budget> getBudgetsInRange(long start, long end) {
+    public List<Budget> getBudgetsInTimeRange(long start, long end) {
         long startOfDay = TimeUtils.toStartOfDay(start);
         long endOfDay  =  TimeUtils.toEndOfDay(end);
         return budgetDao.getBudgetsInInterval(startOfDay, endOfDay);
@@ -61,7 +61,6 @@ public class BudgetRepository {
     public void addToSpentAmount(int budgetId, long amountInCents) {
         budgetDao.incrementCurrentAmount(budgetId, amountInCents);
     }
-
     /**
      * Removes a budget from the database.
      */

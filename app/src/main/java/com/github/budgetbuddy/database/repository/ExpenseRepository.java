@@ -1,8 +1,5 @@
 package com.github.budgetbuddy.database.repository;
 
-import android.app.Application;
-
-import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.dao.ExpenseDao;
 import com.github.budgetbuddy.database.entity.Expense;
 import com.github.budgetbuddy.utils.TimeUtils;
@@ -38,8 +35,9 @@ public class ExpenseRepository {
      * Updates an existing expense. {@code entryDate} is normalized to start-of-day millis.
      */
     public void updateExpense(int id, long amountInCents, int categoryId, long entryDate,
-                              String note, String repeat) {
-        expenseDao.updateExpense(id, amountInCents, categoryId, TimeUtils.toStartOfDay(entryDate), note, repeat);
+                              String note, String repeat, Integer budgetId) {
+        expenseDao.updateExpense(id, amountInCents, categoryId, TimeUtils.toStartOfDay(entryDate),
+                note, repeat, budgetId);
     }
 
     public Expense getExpenseById(int id) {
@@ -68,6 +66,17 @@ public class ExpenseRepository {
     }
 
     public long getTotalSpentForCategoryAndInterval(int categoryId, long start, long end) {
-        return Long.MIN_VALUE; // TODO fix this
+        return expenseDao.getTotalForCategoryAndInterval(categoryId, start, end);
     }
+
+    public long getTotalSpentForBudget(int budgetId, long startDate, long endDate) {
+        Long result = expenseDao.getTotalSpentForBudget(budgetId, startDate, endDate);
+        return result != null ? result : 0L;
+    }
+
+    public List<Expense> getRecentExpenses(long startDate, long endDate, int limit) {
+        return expenseDao.getExpensesIntervalUnderLimit(TimeUtils.toStartOfDay(startDate),
+                TimeUtils.toEndOfDay(endDate), limit);
+    }
+
 }

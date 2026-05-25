@@ -20,7 +20,7 @@ import com.github.budgetbuddy.database.entity.Streak;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Expense.class, Category.class, Budget.class, Streak.class}, version = 3, exportSchema = false)
+@Database(entities = {Expense.class, Category.class, Budget.class, Streak.class}, version = 4, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ExpenseDao expenseDao();
@@ -48,6 +48,10 @@ public abstract class AppDatabase extends RoomDatabase {
                         @Override
                         public void onCreate(@NonNull SupportSQLiteDatabase db) {
                             super.onCreate(db);
+                            // this default value must exist otherwise we cannot delete categories
+                            // from the table
+                            db.execSQL("INSERT INTO category (id, name, icon, color) " +
+                                    "VALUES (69, 'default', ':)', '#9E9E9E')");
                             databaseWriteExecutor.execute(() -> {
                                 AppDatabase database = INSTANCE;
                                 StreakDao streakDao = database.streakDao();

@@ -1,8 +1,5 @@
 package com.github.budgetbuddy.database.repository;
 
-
-import androidx.lifecycle.LiveData;
-
 import com.github.budgetbuddy.database.dao.CategoryDao;
 import com.github.budgetbuddy.database.entity.Category;
 
@@ -16,7 +13,7 @@ public class CategoryRepository {
     }
 
     // Just wraps the DAO method — ViewModel calls this instead of the DAO directly
-    public LiveData<List<Category>> getAllCategories() {
+    public List<Category> getAllCategories() {
         return categoryDao.getCategories();
     }
 

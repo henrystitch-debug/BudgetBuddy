@@ -85,7 +85,6 @@ public class OnboardingActivity extends AppCompatActivity {
         settings.setCurrency(data.currency);
         settings.setNotifsEnabled(data.notifsEnabled);
 
-        // persist selected categories to DB
         AppDatabase.databaseWriteExecutor.execute(() -> {
             for (Object[] data : DBConstants.DEFAULT_CATEGORIES) {
                 Category cat = new Category();
@@ -95,12 +94,9 @@ public class OnboardingActivity extends AppCompatActivity {
                 defaultCategories.add(cat);
             }
 
-            // remove unselected categories
-            for (Category cat : new ArrayList<>(defaultCategories)) {
-                if (!data.selectedCategories.contains(cat.name)) {
-                    defaultCategories.remove(cat);
-                }
-            }
+            // FIXME: unselected categories should never be removed from the database.
+            // we should use a boolean field to hide the unselected categories.
+            defaultCategories.removeIf(cat -> !data.selectedCategories.contains(cat.name));
 
             // insert selected categories
             int startColor = data.newCategories.toArray().length;
@@ -110,8 +106,8 @@ public class OnboardingActivity extends AppCompatActivity {
                 finalCategories.add(cat);
                 rounds++;
             }
-            // insert new custom categories
-               finalCategories.addAll(data.newCategories);
+            finalCategories.addAll(data.newCategories);
+            finalCategories.add(new Category(Category.DEFAULT_NAME, Category.DEFAULT_ICON, ""));
             AppDatabase.databaseWriteExecutor.execute(() -> {
                 CategoryDao dao = AppDatabase.getDatabase(this).categoryDao();
                 for(Category cat : finalCategories) {

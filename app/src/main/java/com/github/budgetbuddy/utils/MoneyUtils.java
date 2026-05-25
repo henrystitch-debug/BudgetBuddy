@@ -1,13 +1,12 @@
 package com.github.budgetbuddy.utils;
 
-import android.icu.math.BigDecimal;
-import android.icu.text.NumberFormat;
-
-import androidx.annotation.Nullable;
-
+import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
+
+import androidx.annotation.Nullable;
 
 public final class MoneyUtils {
     final static String TWO_DEC_PLACES_REGEX = "\\d+(\\.\\d{0,2})?";
@@ -29,10 +28,9 @@ public final class MoneyUtils {
             if (parsed == null) return 0L;
 
             return new BigDecimal(parsed.toString())
-                    .setScale(2, RoundingMode.DOWN.ordinal())
+                    .setScale(2, RoundingMode.DOWN)
                     .multiply(BigDecimal.valueOf(100))
                     .longValue();
-
         } catch (ParseException | NumberFormatException e) {
             return 0L;
         }

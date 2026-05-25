@@ -8,6 +8,7 @@ public final class DBConstants {
     public static final int INVALID = -1;
     public static final String DATABASE_NAME = "budget_buddy_database";
 
+
     public static final Object[][] DEFAULT_CATEGORIES = {
     { "Food",      "🍴"},
     { "Fun",       "⭐"},

@@ -1,6 +1,5 @@
 package com.github.budgetbuddy.database.dao;
 
-import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -20,7 +19,7 @@ public interface CategoryDao {
     Category getCategoryById(int id);
 
     @Query("SELECT * FROM category")
-    LiveData<List<Category>> getCategories();
+    List<Category> getCategories();
 
     @Delete
     void deleteCategory(Category category);

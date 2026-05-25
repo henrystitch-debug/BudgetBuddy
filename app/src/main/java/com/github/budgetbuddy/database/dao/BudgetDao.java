@@ -22,8 +22,12 @@ public interface BudgetDao {
     @Query("SELECT * FROM budget WHERE startDate <= :date AND endDate >= :date ORDER BY startDate DESC, id DESC LIMIT 1")
     Budget getActiveBudget(long date);
 
-    @Query("SELECT * FROM budget WHERE startDate >= :start AND endDate <= :end")
+    /**
+     * Returns budgets that overlap with the given interval.
+     */
+    @Query("SELECT * FROM budget WHERE startDate <= :end AND endDate >= :start")
     List<Budget> getBudgetsInInterval(long start, long end);
+
     @Insert
     long insertBudgetGetId(Budget budget);
 
@@ -45,6 +49,6 @@ public interface BudgetDao {
     @Query("SELECT COALESCE(SUM(`limitInCents`), 0) FROM budget WHERE startDate >= :startDate AND endDate <= :endDate")
     double getTotalBudgetLimitForInterval(long startDate, long endDate);
 
-    @Query("SELECT * FROM budget WHERE categoryId = :categoryId AND startDate = :start AND endDate = :end LIMIT 1")
+    @Query("SELECT * FROM budget WHERE category_id = :categoryId AND startDate = :start AND endDate = :end LIMIT 1")
     Budget getBudgetByCategoryAndInterval(int categoryId, long start, long end);
 }
