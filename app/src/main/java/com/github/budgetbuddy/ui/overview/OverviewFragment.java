@@ -283,7 +283,7 @@ public class OverviewFragment extends Fragment {
 
             PieEntry entry = entries.get(i);
             int      color = colors.get(i);
-            double   pct   = totalSpent > 0 ? (entry.getValue() / totalSpent) * 100.0 : 0;
+            double   pct   = totalSpent > 0 ? (entry.getValue() / totalSpent) * 10000.0 : 0;
 
             LinearLayout legendItem = new LinearLayout(getContext());
             legendItem.setOrientation(LinearLayout.HORIZONTAL);
