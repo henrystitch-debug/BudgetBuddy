@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F9F8">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="20dp"
-        android:paddingBottom="40dp">
+        android:paddingBottom="40dp"
+        android:paddingTop="48dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -184,14 +189,19 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <Button
-            android:id="@+id/btn_save_budget"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="@string/save_budget"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#1A1A1A"
-            android:visibility="gone" />
-
     </LinearLayout>
 </ScrollView>
+    <TextView
+        android:id="@+id/btn_save_budget"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        android:text="@string/save_budget"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#4A7C7C"
+        android:padding="8dp"
+        android:visibility="gone" />
+
+</FrameLayout>
