@@ -15,7 +15,7 @@ BudgetBuddy is a comprehensive personal finance and budget tracking Android appl
 
 ## 🛠 Tech Stack
 
-- **Language**: Java / Kotlin (Gradle DSL)
+- **Language**: Java (Gradle Kotlin DSL for build scripts)
 - **UI Framework**: Android AppCompat, Material Design Components
 - **Architecture**: MVVM (ViewModel, LiveData)
 - **Database**: Room Persistence Library
