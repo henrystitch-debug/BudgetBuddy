@@ -25,7 +25,7 @@ public class Budget {
     public long limitInCents;
     public long currentAmountInCents;
     // a deleted category should not result in loss of its associated budget
-    @ColumnInfo(name = "category_id", defaultValue = "69")
+    @ColumnInfo(name = "category_id", defaultValue = "1")
     public int categoryId;
     public long startDate;
     public long endDate;
