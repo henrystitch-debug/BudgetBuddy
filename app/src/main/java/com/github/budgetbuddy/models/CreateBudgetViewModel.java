@@ -10,7 +10,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.github.budgetbuddy.BudgetBuddyApp;
 import com.github.budgetbuddy.R;
 import com.github.budgetbuddy.SettingsManager;
-import com.github.budgetbuddy.api.ClaudeApiHelper;
+import com.github.budgetbuddy.api.GeminiApiHelper;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.DBConstants;
 import com.github.budgetbuddy.database.entity.Budget;
@@ -102,16 +102,14 @@ public class CreateBudgetViewModel extends AndroidViewModel {
         // ── CHANGED: fetch name from DB via repository instead of CategoryUtils ──
         Category cat     = categoryRepository.getCategoryById(selectedCategoryId);
         String catName   = cat != null ? cat.name : "";
-        // ────────────────────────────────────────────────────────────────────────
 
         String m0Display  = MoneyUtils.fromCentsDisplay(m0,  currentCurrency);
         String m1Display  = MoneyUtils.fromCentsDisplay(m1,  currentCurrency);
         String avgDisplay = MoneyUtils.fromCentsDisplay(avg, currentCurrency);
 
-        ClaudeApiHelper.getBudgetRecommendation(
-                null,
+        GeminiApiHelper.getBudgetRecommendation(
                 catName, currentCurrency, m0Display, m1Display, avgDisplay,
-                new ClaudeApiHelper.ApiCallback() {
+                new GeminiApiHelper.ApiCallback() {
                     @Override public void onSuccess(String recommendation) {
                         _aiResult.postValue(recommendation);
                     }

@@ -13,11 +13,10 @@ import okhttp3.Response;
 
 public class ClaudeApiHelper {
 
-    public interface ApiCallback {
-        void onSuccess(String recommendation);
-        void onError(String error);
-    }
-
+public interface ApiCallback {
+    void onSuccess(String recommendation);
+    void onError(String error);
+}
     private static final String API_URL = "https://api.anthropic.com/v1/messages";
     private static final String MODEL = "claude-haiku-4-5-20251001";
 

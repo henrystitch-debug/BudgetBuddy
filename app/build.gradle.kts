@@ -1,6 +1,5 @@
 import java.util.Properties
 
-
 val localProperties = Properties()
 val localPropertiesFile: File? = rootProject.file("local.properties")
 if (localPropertiesFile?.exists() == true) {
@@ -9,6 +8,7 @@ if (localPropertiesFile?.exists() == true) {
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -75,7 +75,12 @@ dependencies {
     implementation(libs.mpandroidchart)
     implementation(libs.viewpager2)
     implementation(libs.gemini.ai)
-
+    // Import the BoM for the Firebase platform
+    implementation(platform(libs.firebase.bom))
+    // Add the dependency for the Firebase AI Logic library
+    implementation(libs.firebase.ai)
+    // Required to handle Java ListenableFutures comfortably (Guava)
+    implementation(libs.guava)
 
     // testing
     // ── Unit Testing ──────────────────────────────────────────
@@ -88,6 +93,10 @@ dependencies {
     // Optional but highly recommended: mock objects
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.inline)
+    // Explicitly force modern Byte Buddy versions to override the old cached ones
+    testImplementation(libs.byte.buddy)
+    testImplementation(libs.byte.buddy.agent)
+
 
     // ── Instrumented Testing ──────────────────────────────────
     androidTestImplementation(libs.runner)
