@@ -27,6 +27,8 @@ public class GeminiApiHelper {
             String threeMonthAvg,
             ApiCallback callback) {
 
+        // these data may not be available at the point when we need recommendation.
+
         String promptText = "I use a budget tracking app. " +
                 "Category: " + categoryName + ". Currency: " + currency + ". " +
                 "This month I spent " + currency + thisMonthSpend + ". " +
