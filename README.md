@@ -29,7 +29,7 @@ BudgetBuddy is a comprehensive personal finance and budget tracking Android appl
 
 ### Prerequisites
 
-- Android Studio Flamingo or newer
+- Android Studio version compatible with Android Gradle Plugin (AGP) 9.0.0 and Gradle 9.3.1
 - Android SDK 24 (Nougat) or higher
 - [Optional] API keys for AI features (Gemini/Anthropic)
 
