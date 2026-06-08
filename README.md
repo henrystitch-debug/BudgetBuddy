@@ -22,7 +22,7 @@ BudgetBuddy is a comprehensive personal finance and budget tracking Android appl
 - **Background Tasks**: WorkManager
 - **Networking**: OkHttp
 - **Charts**: MPAndroidChart
-- **AI SDKs**: Google Gemini AI
+- **AI SDKs**: Google Gemini AI and Anthropic (Claude)
 - **Dependency Injection/Management**: Version Catalogs (libs.versions.toml)
 
 ## 📦 Getting Started
