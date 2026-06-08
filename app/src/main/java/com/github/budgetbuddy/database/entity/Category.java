@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey;
 
 @Entity(tableName = "category")
 public class Category {
-    public static final int DEFAULT_CAT_ID = 69;
+    public static final int DEFAULT_CAT_ID = 1;
     public static final String DEFAULT_NAME = "default";
     public static final String DEFAULT_ICON = ":)";
 

@@ -106,8 +106,9 @@ public class OnboardingActivity extends AppCompatActivity {
                 finalCategories.add(cat);
                 rounds++;
             }
-            finalCategories.addAll(data.newCategories);
+            // NOTE: add Default Category first so we it is assigned ID 1
             finalCategories.add(new Category(Category.DEFAULT_NAME, Category.DEFAULT_ICON, ""));
+            finalCategories.addAll(data.newCategories);
             AppDatabase.databaseWriteExecutor.execute(() -> {
                 CategoryDao dao = AppDatabase.getDatabase(this).categoryDao();
                 for(Category cat : finalCategories) {
