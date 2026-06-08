@@ -239,14 +239,16 @@ public class OverviewFragment extends Fragment {
             colors.add(Color.parseColor(cat.color));
         }
 
-        if (entries.isEmpty()) {
-            pieChart.setVisibility(View.GONE);
-            legendContainer.setVisibility(View.GONE);
-            return;
+        boolean isEmpty = entries.isEmpty();
+        if (isEmpty) {
+            // Show a gray placeholder slice if no data
+            entries.add(new PieEntry(1f, ""));
+            colors.add(Color.parseColor("#E0E0E0"));
         }
 
         pieChart.setVisibility(View.VISIBLE);
-        legendContainer.setVisibility(View.VISIBLE);
+        // Only show legend container if we actually have category data
+        legendContainer.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
 
         PieDataSet dataSet = new PieDataSet(entries, "");
         dataSet.setColors(colors);
@@ -259,13 +261,20 @@ public class OverviewFragment extends Fragment {
         pieChart.setHoleRadius(55f);
         pieChart.setTransparentCircleRadius(60f);
         pieChart.setHoleColor(Color.WHITE);
-        pieChart.setCenterText(String.format("%s %.0f\ntotal spent", currentCurrency, totalSpent / 100f));
+
+        String centerText = isEmpty
+                ? String.format("%s 0\nspent", currentCurrency)
+                : String.format("%s %.0f\ntotal spent", currentCurrency, totalSpent / 100f);
+
+        pieChart.setCenterText(centerText);
         pieChart.setCenterTextSize(13f);
         pieChart.setCenterTextColor(Color.parseColor("#1A1A1A"));
         pieChart.getDescription().setEnabled(false);
         pieChart.getLegend().setEnabled(false);
         pieChart.setTouchEnabled(false);
         pieChart.invalidate();
+
+        if (isEmpty) return;
 
         legendContainer.removeAllViews();
         final int itemsPerRow = 3;
