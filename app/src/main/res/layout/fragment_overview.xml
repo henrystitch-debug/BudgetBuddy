@@ -149,6 +149,7 @@
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Recent expenses card -->
+        <!-- Recent expenses card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -162,14 +163,38 @@
                 android:orientation="vertical"
                 android:padding="14dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <!-- Header row: title left, "See all" right -->
+                <RelativeLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Recent Expenses"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="#1A1A1A"
-                    android:layout_marginBottom="8dp" />
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Recent Expenses"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#1A1A1A"
+                        android:layout_centerVertical="true" />
+
+                    <TextView
+                        android:id="@+id/tv_see_all_expenses"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="See all"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#4A7C7C"
+                        android:padding="4dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:visibility="gone" />
+
+                </RelativeLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_expenses"
@@ -178,21 +203,6 @@
                     android:nestedScrollingEnabled="false"
                     android:overScrollMode="never" />
 
-                <TextView
-                    android:id="@+id/tv_see_all_expenses"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="See all"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:textColor="#4A7C7C"
-                    android:gravity="center"
-                    android:padding="10dp"
-                    android:layout_marginTop="6dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:background="?attr/selectableItemBackground"
-                    android:visibility="gone" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
