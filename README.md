@@ -40,11 +40,9 @@ BudgetBuddy is a comprehensive personal finance and budget tracking Android appl
    git clone https://github.com/your-username/BudgetBuddy.git
    ```
 2. Open the project in Android Studio.
-3. Create a `local.properties` file in the root directory and add your API keys:
-   ```properties
-   GOOGLE_API_KEY=your_google_api_key
-   ANTHROPIC_API_KEY=your_anthropic_api_key
-   ```
+3. (Optional) Configure API keys for experimental AI features:
+   - Add `ANTHROPIC_API_KEY` (and optionally `GOOGLE_API_KEY`) to `local.properties`.
+   - Note: additional code configuration may be required to pass the key into the AI client.
 4. Sync the project with Gradle files.
 5. Run the app on an emulator or a physical device.
 
