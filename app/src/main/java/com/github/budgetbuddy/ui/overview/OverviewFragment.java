@@ -234,6 +234,7 @@ public class OverviewFragment extends Fragment {
             if (entry.getValue() <= 0) continue;
             Category cat = categoryMap.get(entry.getKey());
             if (cat == null) continue;
+            // NOTE: entry.getValue() is converted back from cents to the Main currency unit
             entries.add(new PieEntry(entry.getValue() / 100f, cat.name));
             colors.add(Color.parseColor(cat.color));
         }
@@ -283,7 +284,8 @@ public class OverviewFragment extends Fragment {
 
             PieEntry entry = entries.get(i);
             int      color = colors.get(i);
-            double   pct   = totalSpent > 0 ? (entry.getValue() / totalSpent) * 10000.0 : 0;
+            // see line237: total spent should also be normalized to get the correct percentage
+            double   pct   = totalSpent > 0 ? (entry.getValue() / (totalSpent/100.0)) * 100.0 : 0;
 
             LinearLayout legendItem = new LinearLayout(getContext());
             legendItem.setOrientation(LinearLayout.HORIZONTAL);
