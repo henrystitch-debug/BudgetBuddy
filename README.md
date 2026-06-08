@@ -37,7 +37,7 @@ BudgetBuddy is a comprehensive personal finance and budget tracking Android appl
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/BudgetBuddy.git
+   git clone https://github.com/henrystitch-debug/BudgetBuddy.git
    ```
 2. Open the project in Android Studio.
 3. (Optional) Configure API keys for experimental AI features:
