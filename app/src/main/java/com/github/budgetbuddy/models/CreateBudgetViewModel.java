@@ -1,6 +1,7 @@
 package com.github.budgetbuddy.models;
 
 import android.app.Application;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -111,16 +112,17 @@ public class CreateBudgetViewModel extends AndroidViewModel {
                 catName, currentCurrency, m0Display, m1Display, avgDisplay,
                 new GeminiApiHelper.ApiCallback() {
                     @Override public void onSuccess(String recommendation) {
+                        Log.d("GEMINI", recommendation);
                         _aiResult.postValue(recommendation);
                     }
                     @Override public void onError(String error) {
+                        Log.d("GEMINI", error);
                         _aiResult.postValue("⚠️ " + error);
                     }
                 }
         );
     });
 }
-    // ── Save budget ───────────────────────────────────────────────────
     public void saveBudget(String amountStr) {
         if (selectedCategoryId == DBConstants.INVALID) {
             String s = getStringFromResource(R.string.empty_cat_prompt);
