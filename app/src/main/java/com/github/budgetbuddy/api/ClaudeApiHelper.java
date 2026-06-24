@@ -1,5 +1,6 @@
 package com.github.budgetbuddy.api;
 
+import com.github.budgetbuddy.BuildConfig;
 import com.github.budgetbuddy.database.AppDatabase;
 
 import org.json.JSONArray;
@@ -21,7 +22,6 @@ public interface ApiCallback {
     private static final String MODEL = "claude-haiku-4-5-20251001";
 
     public static void getBudgetRecommendation(
-            String apiKey,
             String categoryName,
             String currency,
             String thisMonthSpend,
@@ -29,10 +29,11 @@ public interface ApiCallback {
             String threeMonthAvg,
             ApiCallback callback) {
 
-        if (apiKey == null || apiKey.trim().isEmpty()) {
-            callback.onError("No API key found.\nAdd ANTHROPIC_API_KEY=your_key to local.properties and rebuild.");
-            return;
-        }
+        String apiKey = BuildConfig.ANTHROPIC_API_KEY;
+//        if (apiKey == null || apiKey.isBlank()) {
+//            callback.onError("No API key found.\nAdd ANTHROPIC_API_KEY=your_key to local.properties and rebuild.");
+//            return;
+//        }
 
         String prompt = "I use a budget tracking app. " +
                 "Category: " + categoryName + ". Currency: " + currency + ". " +

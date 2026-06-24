@@ -10,6 +10,7 @@ public class GenerateTextFromTextInputTest {
     @Test
     public void generateText() {
         String geminiApiKey = System.getenv("GEMINI_API_KEY");
+        System.out.println(geminiApiKey);
         String runIntegration = System.getenv("RUN_GEMINI_INTEGRATION_TEST");
         Assume.assumeTrue(
                 "Set GEMINI_API_KEY and RUN_GEMINI_INTEGRATION_TEST=true to run this integration test.",

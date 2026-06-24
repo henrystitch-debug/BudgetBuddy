@@ -11,7 +11,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.github.budgetbuddy.BudgetBuddyApp;
 import com.github.budgetbuddy.R;
 import com.github.budgetbuddy.SettingsManager;
-import com.github.budgetbuddy.api.GeminiApiHelper;
+import com.github.budgetbuddy.api.GenerateTextFromInput;
 import com.github.budgetbuddy.database.AppDatabase;
 import com.github.budgetbuddy.database.DBConstants;
 import com.github.budgetbuddy.database.entity.Budget;
@@ -108,9 +108,9 @@ public class CreateBudgetViewModel extends AndroidViewModel {
         String m1Display  = MoneyUtils.fromCentsDisplay(m1,  currentCurrency);
         String avgDisplay = MoneyUtils.fromCentsDisplay(avg, currentCurrency);
 
-        GeminiApiHelper.getBudgetRecommendation(
+        GenerateTextFromInput.getBudgetRecommendation(
                 catName, currentCurrency, m0Display, m1Display, avgDisplay,
-                new GeminiApiHelper.ApiCallback() {
+                new GenerateTextFromInput.ApiCallback() {
                     @Override public void onSuccess(String recommendation) {
                         Log.d("GEMINI", recommendation);
                         _aiResult.postValue(recommendation);
