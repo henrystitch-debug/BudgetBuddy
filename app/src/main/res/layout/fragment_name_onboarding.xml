@@ -14,7 +14,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="What's your name? 👋"
+            android:text="What's your name?"
             android:textSize="26sp"
             android:textStyle="bold"
             android:textColor="#1A1A1A"

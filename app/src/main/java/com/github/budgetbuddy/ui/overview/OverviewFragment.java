@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -368,15 +369,31 @@ public class OverviewFragment extends Fragment {
         if (addTopMargin) blockParams.topMargin = dpToPx(12);
         block.setLayoutParams(blockParams);
 
-        // ── Label row (category name left, amounts right) ──────────────────
+        // ── Label row (category icon + name left, amounts right) ───────────
         LinearLayout labelRow = new LinearLayout(getContext());
         labelRow.setOrientation(LinearLayout.HORIZONTAL);
         labelRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
         labelRow.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
+        Category cat = categoryMap.get(bp.categoryId);
+        String iconName = (cat != null) ? cat.icon : "ic_budget";
+        String catName = (cat != null) ? cat.name : "Unknown";
+
+        ImageView iconView = new ImageView(getContext());
+        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dpToPx(18), dpToPx(18));
+        iconParams.setMargins(0, 0, dpToPx(8), 0);
+        iconView.setLayoutParams(iconParams);
+
+        int resId = getResources().getIdentifier(iconName, "drawable", getContext().getPackageName());
+        if (resId != 0) {
+            iconView.setImageResource(resId);
+        } else {
+            iconView.setImageResource(R.drawable.ic_budget);
+        }
+
         TextView nameView = new TextView(getContext());
-        nameView.setText(bp.categoryLabel);
+        nameView.setText(catName);
         nameView.setTextSize(13f);
         nameView.setTextColor(Color.parseColor("#1A1A1A"));
         nameView.setLayoutParams(new LinearLayout.LayoutParams(
@@ -391,6 +408,7 @@ public class OverviewFragment extends Fragment {
                 ? Color.parseColor("#E53935")
                 : Color.parseColor("#888888"));
 
+        labelRow.addView(iconView);
         labelRow.addView(nameView);
         labelRow.addView(amtView);
         block.addView(labelRow);
@@ -404,7 +422,7 @@ public class OverviewFragment extends Fragment {
             over.setTextColor(Color.parseColor("#E53935"));
             LinearLayout.LayoutParams overParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            overParams.topMargin = dpToPx(2);
+            overParams.setMargins(dpToPx(26), dpToPx(2), 0, 0); // Indent to align with name
             over.setLayoutParams(overParams);
             block.addView(over);
         }

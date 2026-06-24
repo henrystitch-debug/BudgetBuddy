@@ -10,14 +10,14 @@
     android:focusable="true">
 
     <!-- Category Icon -->
-    <TextView
+    <ImageView
         android:id="@+id/tv_cat_icon"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:gravity="center"
-        android:textSize="20sp"
+        android:padding="8dp"
         android:background="@drawable/bg_category_icon"
-        android:layout_marginEnd="12dp" />
+        android:layout_marginEnd="12dp"
+        android:contentDescription="@null" />
 
     <!-- Note + Meta -->
     <LinearLayout

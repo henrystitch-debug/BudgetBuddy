@@ -188,7 +188,7 @@ public class OverviewViewModel extends AndroidViewModel {
             this.spentInCents  = spentInCents;
 
             Category cat       = categoryMap.get(budget.categoryId);
-            this.categoryLabel = cat != null ? cat.icon + "  " + cat.name : "? Unknown";
+            this.categoryLabel = cat != null ? cat.name : "Unknown";
         }
     }
 }

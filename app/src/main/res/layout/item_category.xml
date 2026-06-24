@@ -7,11 +7,12 @@
     android:padding="12dp"
     android:background="@drawable/category_card_background">
 
-    <TextView
+    <ImageView
         android:id="@+id/categoryIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="28sp" />
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginBottom="4dp"
+        android:contentDescription="@null" />
 
     <TextView
         android:id="@+id/categoryName"

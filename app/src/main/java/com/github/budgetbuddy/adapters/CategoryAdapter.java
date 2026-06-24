@@ -1,8 +1,10 @@
 package com.github.budgetbuddy.adapters;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -68,7 +70,16 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     public void onBindViewHolder(ViewHolder holder, int position) {
         Category category = categories.get(position);
 
-        holder.icon.setText(category.icon);
+        Context context = holder.itemView.getContext();
+        int resId = context.getResources().getIdentifier(category.icon, "drawable",
+                context.getPackageName());
+        if (resId != 0) {
+            holder.icon.setImageResource(resId);
+        } else {
+            // Fallback or default icon
+            holder.icon.setImageResource(R.drawable.ic_budget);
+        }
+
         holder.name.setText(category.name);
 
         // Highlight the card if it's the selected one
@@ -95,7 +106,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     // Holds references to the views inside one card so Android
     // doesn't have to look them up repeatedly (which is slow)
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView icon;
+        ImageView icon;
         TextView name;
 
         public ViewHolder(View itemView) {

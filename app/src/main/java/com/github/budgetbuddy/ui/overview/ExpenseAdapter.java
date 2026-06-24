@@ -3,6 +3,7 @@ package com.github.budgetbuddy.ui.overview;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -28,11 +29,10 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHold
     }
 
     private List<Expense> expenses;
-    private Map<Integer, Category> categoryMap;  // ── ADDED
+    private Map<Integer, Category> categoryMap;
     private final OnExpenseClickListener listener;
     private final SettingsManager settingsManager;
 
-    // ── CHANGED: added categoryMap parameter ──────────────────────────────
     public ExpenseAdapter(Context context, List<Expense> expenses,
                           Map<Integer, Category> categoryMap,
                           OnExpenseClickListener listener) {
@@ -41,7 +41,6 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHold
         this.listener    = listener;
         this.settingsManager = new SettingsManager(context);
     }
-    // ──────────────────────────────────────────────────────────────────────
 
     @NonNull
     @Override
@@ -55,20 +54,24 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Expense expense = expenses.get(position);
 
-        // ── CHANGED: look up from map instead of CategoryUtils ─────────────
-        Category cat      = categoryMap.get(expense.categoryId);
-        String   icon    = cat != null ? cat.icon : "?";
-        String   catName  = cat != null ? cat.name  : "";
-        // ──────────────────────────────────────────────────────────────────
+        Category cat = categoryMap.get(expense.categoryId);
+        String iconName = cat != null ? cat.icon : "ic_budget";
+        String catName = cat != null ? cat.name : "";
 
-        holder.tvCatIcon.setText(icon);
+        Context context = holder.itemView.getContext();
+        int resId = context.getResources().getIdentifier(iconName, "drawable", context.getPackageName());
+        if (resId != 0) {
+            holder.tvCatIcon.setImageResource(resId);
+        } else {
+            holder.tvCatIcon.setImageResource(R.drawable.ic_budget);
+        }
 
         String displayNote = (expense.note != null && !expense.note.trim().isEmpty())
                 ? expense.note
                 : catName;
         holder.tvNote.setText(displayNote);
 
-        String date  = TimeUtils.formatDate(expense.entryDateStartInMilliSec);
+        String date = TimeUtils.formatDate(expense.entryDateStartInMilliSec);
         holder.tvMeta.setText(catName + " · " + date);
 
         String currency = settingsManager.getCurrency();
@@ -84,7 +87,6 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHold
         return expenses.size();
     }
 
-    // ── ADDED: allows caller to refresh the map alongside expenses ─────────
     public void updateExpenses(List<Expense> newExpenses, Map<Integer, Category> newCategoryMap) {
         this.expenses    = new ArrayList<>(newExpenses);
         this.categoryMap = newCategoryMap;
@@ -92,7 +94,7 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHold
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        final TextView tvCatIcon;
+        final ImageView tvCatIcon;
         final TextView tvNote;
         final TextView tvMeta;
         final TextView tvAmount;
